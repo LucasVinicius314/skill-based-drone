@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://c5uuvjur3xtu6"]
 
 [ext_resource type="PackedScene" uid="uid://bcyysl4gq24n2" path="res://prefabs/player.tscn" id="1_w2twt"]
+[ext_resource type="Script" path="res://src/scripts/TargetSpawnerScript.cs" id="2_spawner"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_und3l"]
 size = Vector3(50, 1, 50)
@@ -31,6 +32,9 @@ shape = SubResource("BoxShape3D_und3l")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D" unique_id=439565742]
 mesh = SubResource("BoxMesh_und3l")
+
+[node name="TargetSpawner" type="Node3D" parent="." unique_id=999000001]
+script = ExtResource("2_spawner")
 
 [node name="Player" parent="." unique_id=1035182302 instance=ExtResource("1_w2twt")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.34434414, 0.685, 2.2262802)

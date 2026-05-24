@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://v5qtegsgmvkb"]
+
+[ext_resource type="Script" uid="uid://dwbj52pl3oavs" path="res://src/scripts/TargetScript.cs" id="1_target"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_target"]
+albedo_color = Color(1, 0.1, 0.1, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_target"]
+material = SubResource("StandardMaterial3D_target")
+size = Vector3(4, 4, 0.5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_target"]
+size = Vector3(4, 4, 0.5)
+
+[node name="Target" type="Node3D" unique_id=379104609]
+script = ExtResource("1_target")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1662156342]
+mesh = SubResource("BoxMesh_target")
+
+[node name="Area3D" type="Area3D" parent="." unique_id=1914874506]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D" unique_id=883147721]
+shape = SubResource("BoxShape3D_target")
