@@ -125,11 +125,13 @@ public partial class PlayerScript : RigidBody3D
     // Yaw: rotate around world Y axis
     ApplyTorque(Vector3.Up * yaw * yawTorque);
 
-    // Roll: mouse X rotates around local Z axis
-    ApplyTorque(-GlobalTransform.Basis.Z * _rollInput * mouseSensitivity * rollTorque);
+    // Roll: mouse X + roll axis rotates around local Z axis
+    var rollAxis = -Input.GetAxis("roll_up", "roll_down") * .25f;
+    ApplyTorque(-GlobalTransform.Basis.Z * (_rollInput * mouseSensitivity + rollAxis) * rollTorque);
 
-    // Pitch: mouse Y rotates around local X axis
-    ApplyTorque(GlobalTransform.Basis.X * _pitchInput * mouseSensitivity * pitchTorque);
+    // Pitch: mouse Y + pitch axis rotates around local X axis
+    var pitchAxis = Input.GetAxis("pitch_up", "pitch_down") * .25f;
+    ApplyTorque(GlobalTransform.Basis.X * (_pitchInput * mouseSensitivity + pitchAxis) * pitchTorque);
 
     _rollInput = 0f;
     _pitchInput = 0f;
@@ -138,7 +140,7 @@ public partial class PlayerScript : RigidBody3D
     _camera.Fov = Mathf.Lerp(_camera.Fov, _targetFov, fovLerpSpeed * (float)delta);
 
     _fireTimer -= (float)delta;
-    if (Input.IsMouseButtonPressed(MouseButton.Left) && _fireTimer <= 0f)
+    if (Input.GetActionStrength("fire") > 0.5f && _fireTimer <= 0f)
     {
       _fireTimer = fireRate;
       var bullet = _bulletPrefab.Instantiate<BulletScript>();
