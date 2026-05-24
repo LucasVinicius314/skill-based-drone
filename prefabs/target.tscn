@@ -14,17 +14,21 @@ size = Vector3(4, 4, 0.5)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bg"]
 albedo_color = Color(0.2, 0.2, 0.2, 1)
+shading_mode = 1
+no_depth_test = true
 
 [sub_resource type="BoxMesh" id="BoxMesh_bg"]
 material = SubResource("StandardMaterial3D_bg")
-size = Vector3(4, 0.4, 0.1)
+size = Vector3(4, 0.4, 0.01)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fill"]
 albedo_color = Color(0.1, 1, 0.1, 1)
+shading_mode = 1
+no_depth_test = true
 
 [sub_resource type="BoxMesh" id="BoxMesh_fill"]
 material = SubResource("StandardMaterial3D_fill")
-size = Vector3(4, 0.4, 0.1)
+size = Vector3(4, 0.4, 0.01)
 
 [node name="Target" type="Node3D" unique_id=379104609]
 script = ExtResource("1_target")
@@ -44,5 +48,5 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.6, 0)
 mesh = SubResource("BoxMesh_bg")
 
 [node name="Fill" type="MeshInstance3D" parent="HealthBar" unique_id=700000003]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.06)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.02)
 mesh = SubResource("BoxMesh_fill")

@@ -12,7 +12,9 @@ public partial class PlayerScript : RigidBody3D
   [Export] float fovMin = 20f;
   [Export] float fovMax = 120f;
   [Export] float fovScrollStep = 5f;
+  [Export] float fovLerpSpeed = 10f;
 
+  float _targetFov;
   float _pitchInput;
   float _rollInput;
   float _fireTimer;
@@ -39,6 +41,7 @@ public partial class PlayerScript : RigidBody3D
     _shootAudio.Stream = GD.Load<AudioStream>("res://sounds/653191__sebastianvdb__close-gun-shots-trim.mp3");
     _hitmarkerAudio.Stream = GD.Load<AudioStream>("res://sounds/hitmarker.mp3");
     _camera.Fov = fovDefault;
+    _targetFov = fovDefault;
     _bladesAudio.Finished += () => _bladesAudio.Play();
     _bladesAudio.Play();
     _health = maxHealth;
@@ -82,11 +85,11 @@ public partial class PlayerScript : RigidBody3D
     {
       if (scroll.ButtonIndex == MouseButton.WheelUp)
       {
-        _camera.Fov = Mathf.Clamp(_camera.Fov - fovScrollStep, fovMin, fovMax);
+        _targetFov = Mathf.Clamp(_targetFov - fovScrollStep, fovMin, fovMax);
       }
       else if (scroll.ButtonIndex == MouseButton.WheelDown)
       {
-        _camera.Fov = Mathf.Clamp(_camera.Fov + fovScrollStep, fovMin, fovMax);
+        _targetFov = Mathf.Clamp(_targetFov + fovScrollStep, fovMin, fovMax);
       }
     }
 
@@ -132,6 +135,7 @@ public partial class PlayerScript : RigidBody3D
     _pitchInput = 0f;
 
     _bladesAudio.PitchScale = Mathf.Lerp(bladePitchIdle, bladePitchMax, Mathf.Abs(throttle));
+    _camera.Fov = Mathf.Lerp(_camera.Fov, _targetFov, fovLerpSpeed * (float)delta);
 
     _fireTimer -= (float)delta;
     if (Input.IsMouseButtonPressed(MouseButton.Left) && _fireTimer <= 0f)
