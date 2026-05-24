@@ -1,15 +1,92 @@
 [gd_scene format=3 uid="uid://bcyysl4gq24n2"]
 
+[ext_resource type="Script" uid="uid://cfxaoqoik7fa3" path="res://src/scripts/PlayerScript.cs" id="1_72ieh"]
+[ext_resource type="Texture2D" uid="uid://cx5g2crwr6koo" path="res://skyboxes/industrial_sunset_puresky_4k.exr" id="2_4dohe"]
+
+[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_r66lb"]
+panorama = ExtResource("2_4dohe")
+
+[sub_resource type="Sky" id="Sky_1txc5"]
+sky_material = SubResource("PanoramaSkyMaterial_r66lb")
+
+[sub_resource type="Environment" id="Environment_ht1c8"]
+background_mode = 2
+sky = SubResource("Sky_1txc5")
+
 [sub_resource type="BoxShape3D" id="BoxShape3D_fp3wc"]
 size = Vector3(0.795, 0.37, 0.895)
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_72ieh"]
+albedo_color = Color(0.79607844, 0.60784316, 0.43137255, 1)
+
 [sub_resource type="BoxMesh" id="BoxMesh_fp3wc"]
+material = SubResource("StandardMaterial3D_72ieh")
 size = Vector3(0.795, 0.37, 0.895)
 
 [node name="Player" type="RigidBody3D" unique_id=1035182302]
+angular_damp = 2.0
+script = ExtResource("1_72ieh")
+throttleForce = 57.44
+yawTorque = 0.71
+pitchTorque = 6.06
+rollTorque = 6.33
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=181144900]
-transform = Transform3D(1, 0, 0, 0, 0.97687054, 0.21383181, 0, -0.21383181, 0.97687054, 0, 1.129781, 2.1581213)
+transform = Transform3D(1, 0, 0, 0, 0.94681793, -0.32176995, 0, 0.32176995, 0.94681793, 0, -0.21523573, -0.47982562)
+environment = SubResource("Environment_ht1c8")
+fov = 120.8
+
+[node name="CanvasLayer" type="CanvasLayer" parent="Camera3D" unique_id=464556633]
+
+[node name="Control" type="Control" parent="Camera3D/CanvasLayer" unique_id=22442917]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ColorRect" type="ColorRect" parent="Camera3D/CanvasLayer/Control" unique_id=921121692]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -2.0
+offset_top = -2.0
+offset_right = 2.0
+offset_bottom = 2.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ColorRect2" type="ColorRect" parent="Camera3D/CanvasLayer/Control" unique_id=1371791780]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -26.0
+offset_top = -2.0
+offset_right = -14.0
+offset_bottom = 2.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ColorRect3" type="ColorRect" parent="Camera3D/CanvasLayer/Control" unique_id=1483430251]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 14.0
+offset_top = -2.0
+offset_right = 26.0
+offset_bottom = 2.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1404248078]
 shape = SubResource("BoxShape3D_fp3wc")
