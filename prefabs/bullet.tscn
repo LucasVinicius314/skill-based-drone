@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://dhnoaqgqurrxy"]
+
+[ext_resource type="Script" uid="uid://24mmmovy0m2h" path="res://src/scripts/BulletScript.cs" id="1_bullet"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_bullet"]
+radius = 0.05
+
+[sub_resource type="SphereMesh" id="SphereMesh_bullet"]
+radius = 0.05
+height = 0.1
+
+[node name="Bullet" type="RigidBody3D" unique_id=134876300]
+physics_interpolation_mode = 1
+gravity_scale = 0.1
+script = ExtResource("1_bullet")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=95420395]
+shape = SubResource("SphereShape3D_bullet")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=788754835]
+mesh = SubResource("SphereMesh_bullet")

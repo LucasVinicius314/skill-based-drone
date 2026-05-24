@@ -7,13 +7,19 @@ public partial class PlayerScript : RigidBody3D
   [Export] float pitchTorque = 3f;
   [Export] float rollTorque = 3f;
   [Export] float mouseSensitivity = 0.003f;
+  [Export] float fireRate = 0.08f;
 
   float _pitchInput;
   float _rollInput;
+  float _fireTimer;
+
+  PackedScene _bulletPrefab = GD.Load<PackedScene>("res://prefabs/bullet.tscn");
+  Node3D _barrel;
 
   public override void _Ready()
   {
     Input.MouseMode = Input.MouseModeEnum.Captured;
+    _barrel = GetNode<Node3D>("Node3D/Barrel");
   }
 
   public override void _Input(InputEvent @event)
@@ -49,5 +55,14 @@ public partial class PlayerScript : RigidBody3D
 
     _rollInput = 0f;
     _pitchInput = 0f;
+
+    _fireTimer -= (float)delta;
+    if (Input.IsMouseButtonPressed(MouseButton.Left) && _fireTimer <= 0f)
+    {
+      _fireTimer = fireRate;
+      var bullet = _bulletPrefab.Instantiate<BulletScript>();
+      GetTree().CurrentScene.AddChild(bullet);
+      bullet.Launch(_barrel.GlobalPosition, -_barrel.GlobalTransform.Basis.Z);
+    }
   }
 }
