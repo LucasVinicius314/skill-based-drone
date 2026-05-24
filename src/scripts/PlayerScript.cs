@@ -8,6 +8,10 @@ public partial class PlayerScript : RigidBody3D
   [Export] float rollTorque = 3f;
   [Export] float mouseSensitivity = 0.003f;
   [Export] float fireRate = 0.08f;
+  [Export] float fovDefault = 75f;
+  [Export] float fovMin = 20f;
+  [Export] float fovMax = 120f;
+  [Export] float fovScrollStep = 5f;
 
   float _pitchInput;
   float _rollInput;
@@ -15,11 +19,14 @@ public partial class PlayerScript : RigidBody3D
 
   PackedScene _bulletPrefab = GD.Load<PackedScene>("res://prefabs/bullet.tscn");
   Node3D _barrel;
+  Camera3D _camera;
 
   public override void _Ready()
   {
     Input.MouseMode = Input.MouseModeEnum.Captured;
     _barrel = GetNode<Node3D>("Node3D/Barrel");
+    _camera = GetNode<Camera3D>("Node3D/Camera3D");
+    _camera.Fov = fovDefault;
   }
 
   public override void _Input(InputEvent @event)
@@ -28,6 +35,18 @@ public partial class PlayerScript : RigidBody3D
     {
       _rollInput = motion.Relative.X;
       _pitchInput = motion.Relative.Y;
+    }
+
+    if (@event is InputEventMouseButton scroll && scroll.Pressed)
+    {
+      if (scroll.ButtonIndex == MouseButton.WheelUp)
+      {
+        _camera.Fov = Mathf.Clamp(_camera.Fov - fovScrollStep, fovMin, fovMax);
+      }
+      else if (scroll.ButtonIndex == MouseButton.WheelDown)
+      {
+        _camera.Fov = Mathf.Clamp(_camera.Fov + fovScrollStep, fovMin, fovMax);
+      }
     }
 
     if (@event is InputEventKey key && key.Keycode == Key.Escape && key.Pressed)
