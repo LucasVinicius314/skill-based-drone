@@ -9,7 +9,7 @@ height = 0.1
 [node name="Bullet" type="Node3D" unique_id=134876300]
 script = ExtResource("1_bullet")
 speed = 308.715
-lifetime = 27.58
+lifetime = 6.12
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=788754835]
 mesh = SubResource("SphereMesh_bullet")

@@ -39,7 +39,7 @@ throttleForce = 57.44
 yawTorque = 0.71
 pitchTorque = 6.06
 rollTorque = 6.33
-fireRate = 0.005
+fireRate = 0.1
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1404248078]
 shape = SubResource("BoxShape3D_fp3wc")
@@ -63,6 +63,19 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="HealthLabel" type="Label" parent="Node3D/Camera3D/CanvasLayer/Control" unique_id=810000001]
+layout_mode = 1
+anchors_preset = 2
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 0.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = -40.0
+offset_right = 120.0
+offset_bottom = -12.0
+text = "HP: 10"
 
 [node name="ColorRect" type="ColorRect" parent="Node3D/Camera3D/CanvasLayer/Control" unique_id=921121692]
 material = SubResource("ShaderMaterial_1txc5")
@@ -121,3 +134,6 @@ max_distance = 80.0
 [node name="ShootAudio" type="AudioStreamPlayer3D" parent="." unique_id=800000002]
 volume_db = -34.727
 max_distance = 60.0
+
+[node name="HitmarkerAudio" type="AudioStreamPlayer" parent="." unique_id=800000003]
+volume_db = -35.863

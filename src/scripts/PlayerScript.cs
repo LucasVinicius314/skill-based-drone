@@ -25,6 +25,7 @@ public partial class PlayerScript : RigidBody3D
   Camera3D _camera;
   AudioStreamPlayer3D _bladesAudio;
   AudioStreamPlayer3D _shootAudio;
+  AudioStreamPlayer _hitmarkerAudio;
 
   public override void _Ready()
   {
@@ -33,11 +34,40 @@ public partial class PlayerScript : RigidBody3D
     _camera = GetNode<Camera3D>("Node3D/Camera3D");
     _bladesAudio = GetNode<AudioStreamPlayer3D>("BladesAudio");
     _shootAudio = GetNode<AudioStreamPlayer3D>("ShootAudio");
+    _hitmarkerAudio = GetNode<AudioStreamPlayer>("HitmarkerAudio");
     _bladesAudio.Stream = GD.Load<AudioStream>("res://sounds/49483__lorenzosu__helicopterraw_30sec.wav");
     _shootAudio.Stream = GD.Load<AudioStream>("res://sounds/653191__sebastianvdb__close-gun-shots-trim.mp3");
+    _hitmarkerAudio.Stream = GD.Load<AudioStream>("res://sounds/hitmarker.mp3");
     _camera.Fov = fovDefault;
     _bladesAudio.Finished += () => _bladesAudio.Play();
     _bladesAudio.Play();
+    _health = maxHealth;
+    _healthLabel = GetNode<Label>("Node3D/Camera3D/CanvasLayer/Control/HealthLabel");
+    UpdateHealthLabel();
+  }
+
+  public void PlayHitmarker()
+  {
+    _hitmarkerAudio.Play();
+  }
+
+  public void TakeDamage(int amount)
+  {
+    _health = Mathf.Max(_health - amount, 0);
+    UpdateHealthLabel();
+
+    var rng = new RandomNumberGenerator();
+    ApplyTorque(new Vector3(rng.RandfRange(-1f, 1f), rng.RandfRange(-1f, 1f), rng.RandfRange(-1f, 1f)).Normalized() * hitSpinForce);
+
+    if (_health <= 0)
+    {
+      GD.Print("Player dead");
+    }
+  }
+
+  void UpdateHealthLabel()
+  {
+    _healthLabel.Text = $"HP: {_health}";
   }
 
   public override void _Input(InputEvent @event)
@@ -65,6 +95,14 @@ public partial class PlayerScript : RigidBody3D
       Input.MouseMode = Input.MouseModeEnum.Visible;
     }
   }
+
+  [Export] float hitSpinForce = 8f;
+  [Export] int maxHealth = 10;
+
+  int _health;
+  Label _healthLabel;
+
+  public int Health => _health;
 
   public override void _PhysicsProcess(double delta)
   {
