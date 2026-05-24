@@ -8,6 +8,7 @@ public partial class PlayerScript : RigidBody3D
   [Export] float rollTorque = 3f;
   [Export] float mouseSensitivity = 0.003f;
   [Export] float fireRate = 0.08f;
+  [Export] float missileFireRate = 1.2f;
   [Export] float fovDefault = 120f;
   [Export] float fovMin = 5f;
   [Export] float fovMax = 120f;
@@ -23,16 +24,20 @@ public partial class PlayerScript : RigidBody3D
   [Export] float bladePitchMax = 1.4f;
 
   PackedScene _bulletPrefab = GD.Load<PackedScene>("res://prefabs/bullet.tscn");
+  PackedScene _missilePrefab = GD.Load<PackedScene>("res://prefabs/missile.tscn");
   Node3D _barrel;
+  Node3D _missileBarrel;
   Camera3D _camera;
   AudioStreamPlayer3D _bladesAudio;
   AudioStreamPlayer3D _shootAudio;
   AudioStreamPlayer _hitmarkerAudio;
+  float _missileTimer;
 
   public override void _Ready()
   {
     Input.MouseMode = Input.MouseModeEnum.Captured;
     _barrel = GetNode<Node3D>("Mount/Barrel");
+    _missileBarrel = GetNode<Node3D>("Mount/MissileLauncher/Barrel");
     _camera = GetNode<Camera3D>("Mount/Camera3D");
     _bladesAudio = GetNode<AudioStreamPlayer3D>("BladesAudio");
     _shootAudio = GetNode<AudioStreamPlayer3D>("ShootAudio");
@@ -152,6 +157,15 @@ public partial class PlayerScript : RigidBody3D
       GetTree().CurrentScene.AddChild(bullet);
       bullet.Launch(_barrel.GlobalPosition, -_barrel.GlobalTransform.Basis.Z);
       _shootAudio.Play();
+    }
+
+    _missileTimer -= (float)delta;
+    if (Input.IsActionJustPressed("fire_missile") && _missileTimer <= 0f)
+    {
+      _missileTimer = missileFireRate;
+      var missile = _missilePrefab.Instantiate<MissileScript>();
+      GetTree().CurrentScene.AddChild(missile);
+      missile.Launch(_missileBarrel.GlobalPosition, -_missileBarrel.GlobalTransform.Basis.Z);
     }
   }
 }
