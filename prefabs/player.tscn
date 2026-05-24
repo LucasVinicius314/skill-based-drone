@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://bcyysl4gq24n2"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_fp3wc"]
+size = Vector3(0.795, 0.37, 0.895)
+
+[sub_resource type="BoxMesh" id="BoxMesh_fp3wc"]
+size = Vector3(0.795, 0.37, 0.895)
+
+[node name="Player" type="RigidBody3D" unique_id=1035182302]
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=181144900]
+transform = Transform3D(1, 0, 0, 0, 0.97687054, 0.21383181, 0, -0.21383181, 0.97687054, 0, 1.129781, 2.1581213)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1404248078]
+shape = SubResource("BoxShape3D_fp3wc")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=201126372]
+mesh = SubResource("BoxMesh_fp3wc")
