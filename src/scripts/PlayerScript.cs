@@ -17,16 +17,27 @@ public partial class PlayerScript : RigidBody3D
   float _rollInput;
   float _fireTimer;
 
+  [Export] float bladePitchIdle = 0.8f;
+  [Export] float bladePitchMax = 1.4f;
+
   PackedScene _bulletPrefab = GD.Load<PackedScene>("res://prefabs/bullet.tscn");
   Node3D _barrel;
   Camera3D _camera;
+  AudioStreamPlayer3D _bladesAudio;
+  AudioStreamPlayer3D _shootAudio;
 
   public override void _Ready()
   {
     Input.MouseMode = Input.MouseModeEnum.Captured;
     _barrel = GetNode<Node3D>("Node3D/Barrel");
     _camera = GetNode<Camera3D>("Node3D/Camera3D");
+    _bladesAudio = GetNode<AudioStreamPlayer3D>("BladesAudio");
+    _shootAudio = GetNode<AudioStreamPlayer3D>("ShootAudio");
+    _bladesAudio.Stream = GD.Load<AudioStream>("res://sounds/49483__lorenzosu__helicopterraw_30sec.wav");
+    _shootAudio.Stream = GD.Load<AudioStream>("res://sounds/653191__sebastianvdb__close-gun-shots-trim.mp3");
     _camera.Fov = fovDefault;
+    _bladesAudio.Finished += () => _bladesAudio.Play();
+    _bladesAudio.Play();
   }
 
   public override void _Input(InputEvent @event)
@@ -75,6 +86,8 @@ public partial class PlayerScript : RigidBody3D
     _rollInput = 0f;
     _pitchInput = 0f;
 
+    _bladesAudio.PitchScale = Mathf.Lerp(bladePitchIdle, bladePitchMax, Mathf.Abs(throttle));
+
     _fireTimer -= (float)delta;
     if (Input.IsMouseButtonPressed(MouseButton.Left) && _fireTimer <= 0f)
     {
@@ -82,6 +95,7 @@ public partial class PlayerScript : RigidBody3D
       var bullet = _bulletPrefab.Instantiate<BulletScript>();
       GetTree().CurrentScene.AddChild(bullet);
       bullet.Launch(_barrel.GlobalPosition, -_barrel.GlobalTransform.Basis.Z);
+      _shootAudio.Play();
     }
   }
 }

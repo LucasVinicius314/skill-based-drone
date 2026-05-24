@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://damagenum001"]
+
+[ext_resource type="Script" path="res://src/scripts/DamageNumberScript.cs" id="1_dmgnum"]
+
+[node name="DamageNumber" type="Label3D"]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0)
+billboard = 1
+font_size = 256
+outline_size = 24
+fixed_size = true
+script = ExtResource("1_dmgnum")

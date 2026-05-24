@@ -33,6 +33,7 @@ throttleForce = 57.44
 yawTorque = 0.71
 pitchTorque = 6.06
 rollTorque = 6.33
+fireRate = 0.005
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1404248078]
 shape = SubResource("BoxShape3D_fp3wc")
@@ -102,3 +103,12 @@ grow_vertical = 2
 [node name="Barrel" type="MeshInstance3D" parent="Node3D" unique_id=1702927389]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.19587857, 0.07134849)
 mesh = SubResource("BoxMesh_4dohe")
+
+[node name="BladesAudio" type="AudioStreamPlayer3D" parent="." unique_id=800000001]
+volume_db = -44.272
+autoplay = true
+max_distance = 80.0
+
+[node name="ShootAudio" type="AudioStreamPlayer3D" parent="." unique_id=800000002]
+volume_db = -34.727
+max_distance = 60.0

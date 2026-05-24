@@ -39,7 +39,7 @@ public partial class BulletScript : Node3D
       var target = collider.GetParentOrNull<TargetScript>();
       if (target != null)
       {
-        target.QueueFree();
+        target.TakeDamage(1, result["position"].AsVector3());
       }
       QueueFree();
       return;
