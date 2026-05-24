@@ -8,7 +8,7 @@ public partial class PlayerScript : RigidBody3D
   [Export] float rollTorque = 3f;
   [Export] float mouseSensitivity = 0.003f;
   [Export] float fireRate = 0.08f;
-  [Export] float fovDefault = 75f;
+  [Export] float fovDefault = 120f;
   [Export] float fovMin = 20f;
   [Export] float fovMax = 120f;
   [Export] float fovScrollStep = 5f;
@@ -122,8 +122,8 @@ public partial class PlayerScript : RigidBody3D
     // Throttle: push up along the drone's local Y axis
     ApplyCentralForce(-GlobalTransform.Basis.Y * throttle * throttleForce);
 
-    // Yaw: rotate around world Y axis
-    ApplyTorque(Vector3.Up * yaw * yawTorque);
+    // Yaw: rotate around local Y axis
+    ApplyTorque(GlobalTransform.Basis.Y * yaw * yawTorque);
 
     // Roll: mouse X + roll axis rotates around local Z axis
     var rollAxis = -Input.GetAxis("roll_up", "roll_down") * .25f;
