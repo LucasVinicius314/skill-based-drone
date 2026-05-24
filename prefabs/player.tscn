@@ -30,6 +30,9 @@ shader = ExtResource("3_r66lb")
 [sub_resource type="BoxMesh" id="BoxMesh_4dohe"]
 size = Vector3(0.025, 0.025, 0.395)
 
+[sub_resource type="BoxMesh" id="BoxMesh_r66lb"]
+size = Vector3(0.04, 0.085, 0.395)
+
 [node name="Player" type="RigidBody3D" unique_id=1035182302]
 physics_interpolation_mode = 1
 continuous_cd = true
@@ -47,16 +50,16 @@ shape = SubResource("BoxShape3D_fp3wc")
 [node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=201126372]
 mesh = SubResource("BoxMesh_fp3wc")
 
-[node name="Node3D" type="Node3D" parent="." unique_id=546730480]
+[node name="Mount" type="Node3D" parent="." unique_id=546730480]
 transform = Transform3D(1, 0, 0, 0, 0.9468179, -0.32176992, 0, 0.32176992, 0.9468179, 0, -0.21523573, -0.47982562)
 
-[node name="Camera3D" type="Camera3D" parent="Node3D" unique_id=181144900]
+[node name="Camera3D" type="Camera3D" parent="Mount" unique_id=181144900]
 environment = SubResource("Environment_ht1c8")
 fov = 120.8
 
-[node name="CanvasLayer" type="CanvasLayer" parent="Node3D/Camera3D" unique_id=464556633]
+[node name="CanvasLayer" type="CanvasLayer" parent="Mount/Camera3D" unique_id=464556633]
 
-[node name="Control" type="Control" parent="Node3D/Camera3D/CanvasLayer" unique_id=22442917]
+[node name="Control" type="Control" parent="Mount/Camera3D/CanvasLayer" unique_id=22442917]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -64,7 +67,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="HealthLabel" type="Label" parent="Node3D/Camera3D/CanvasLayer/Control" unique_id=810000001]
+[node name="HealthLabel" type="Label" parent="Mount/Camera3D/CanvasLayer/Control" unique_id=810000001]
 layout_mode = 1
 anchors_preset = 2
 anchor_top = 1.0
@@ -76,7 +79,7 @@ offset_bottom = -12.0
 grow_vertical = 0
 text = "HP: 10"
 
-[node name="ColorRect" type="ColorRect" parent="Node3D/Camera3D/CanvasLayer/Control" unique_id=921121692]
+[node name="ColorRect" type="ColorRect" parent="Mount/Camera3D/CanvasLayer/Control" unique_id=921121692]
 material = SubResource("ShaderMaterial_1txc5")
 layout_mode = 1
 anchors_preset = 8
@@ -91,7 +94,7 @@ offset_bottom = 2.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="ColorRect2" type="ColorRect" parent="Node3D/Camera3D/CanvasLayer/Control" unique_id=1371791780]
+[node name="ColorRect2" type="ColorRect" parent="Mount/Camera3D/CanvasLayer/Control" unique_id=1371791780]
 material = SubResource("ShaderMaterial_1txc5")
 layout_mode = 1
 anchors_preset = 8
@@ -106,7 +109,7 @@ offset_bottom = 2.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="ColorRect3" type="ColorRect" parent="Node3D/Camera3D/CanvasLayer/Control" unique_id=1483430251]
+[node name="ColorRect3" type="ColorRect" parent="Mount/Camera3D/CanvasLayer/Control" unique_id=1483430251]
 material = SubResource("ShaderMaterial_1txc5")
 layout_mode = 1
 anchors_preset = 8
@@ -121,9 +124,16 @@ offset_bottom = 2.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Barrel" type="MeshInstance3D" parent="Node3D" unique_id=1702927389]
+[node name="Barrel" type="MeshInstance3D" parent="Mount" unique_id=1702927389]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.19587857, 0.07134849)
 mesh = SubResource("BoxMesh_4dohe")
+
+[node name="MissileLauncher" type="Node3D" parent="Mount" unique_id=723485964]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.20292075, -0.1683172, 0.057201505)
+
+[node name="Barrel" type="MeshInstance3D" parent="Mount/MissileLauncher" unique_id=122172497]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.03703764, -0.0071005225, 0.0024130344)
+mesh = SubResource("BoxMesh_r66lb")
 
 [node name="BladesAudio" type="AudioStreamPlayer3D" parent="." unique_id=800000001]
 volume_db = -44.272

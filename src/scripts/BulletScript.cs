@@ -39,6 +39,19 @@ public partial class BulletScript : Node3D
     _immediateMesh = new ImmediateMesh();
     _trailMesh = new MeshInstance3D { Mesh = _immediateMesh, MaterialOverride = _trailMaterial };
     GetTree().CurrentScene.AddChild(_trailMesh);
+
+    if (owner == Owner.Enemy)
+    {
+      var audio = new AudioStreamPlayer3D
+      {
+        Stream = GD.Load<AudioStream>("res://sounds/653191__sebastianvdb__close-gun-shots-trim.mp3"),
+        GlobalPosition = origin,
+        MaxDistance = 120f,
+        Autoplay = true,
+      };
+      GetTree().CurrentScene.AddChild(audio);
+      audio.Finished += audio.QueueFree;
+    }
   }
 
   public override void _PhysicsProcess(double delta)
@@ -55,8 +68,8 @@ public partial class BulletScript : Node3D
     {
       From = GlobalPosition,
       To = GlobalPosition + move,
-      CollideWithAreas = _owner == Owner.Player,
-      CollideWithBodies = _owner == Owner.Enemy,
+      CollideWithAreas = true,
+      CollideWithBodies = true,
     };
 
     var result = GetWorld3D().DirectSpaceState.IntersectRay(query);
@@ -66,8 +79,10 @@ public partial class BulletScript : Node3D
       if (_owner == Owner.Player)
       {
         var hitPos = result["position"].AsVector3();
-        collider.GetParentOrNull<TargetScript>()?.TakeDamage(1, hitPos);
-        collider.GetParentOrNull<WormSegmentScript>()?.TakeDamage(1);
+        var target = collider.GetParentOrNull<TargetScript>() ?? collider as TargetScript;
+        var worm = collider.GetParentOrNull<WormSegmentScript>() ?? collider as WormSegmentScript;
+        target?.TakeDamage(1, hitPos);
+        worm?.TakeDamage(1);
       }
       else
       {

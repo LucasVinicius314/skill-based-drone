@@ -9,7 +9,7 @@ public partial class PlayerScript : RigidBody3D
   [Export] float mouseSensitivity = 0.003f;
   [Export] float fireRate = 0.08f;
   [Export] float fovDefault = 120f;
-  [Export] float fovMin = 20f;
+  [Export] float fovMin = 5f;
   [Export] float fovMax = 120f;
   [Export] float fovScrollStep = 5f;
   [Export] float fovLerpSpeed = 10f;
@@ -32,8 +32,8 @@ public partial class PlayerScript : RigidBody3D
   public override void _Ready()
   {
     Input.MouseMode = Input.MouseModeEnum.Captured;
-    _barrel = GetNode<Node3D>("Node3D/Barrel");
-    _camera = GetNode<Camera3D>("Node3D/Camera3D");
+    _barrel = GetNode<Node3D>("Mount/Barrel");
+    _camera = GetNode<Camera3D>("Mount/Camera3D");
     _bladesAudio = GetNode<AudioStreamPlayer3D>("BladesAudio");
     _shootAudio = GetNode<AudioStreamPlayer3D>("ShootAudio");
     _hitmarkerAudio = GetNode<AudioStreamPlayer>("HitmarkerAudio");
@@ -45,7 +45,7 @@ public partial class PlayerScript : RigidBody3D
     _bladesAudio.Finished += () => _bladesAudio.Play();
     _bladesAudio.Play();
     _health = maxHealth;
-    _healthLabel = GetNode<Label>("Node3D/Camera3D/CanvasLayer/Control/HealthLabel");
+    _healthLabel = GetNode<Label>("Mount/Camera3D/CanvasLayer/Control/HealthLabel");
     UpdateHealthLabel();
   }
 
@@ -113,6 +113,9 @@ public partial class PlayerScript : RigidBody3D
   Label _healthLabel;
 
   public int Health => _health;
+  public float CurrentFov => _camera.Fov;
+  public float FovMin => fovMin;
+  public float FovMax => fovMax;
 
   public override void _PhysicsProcess(double delta)
   {
@@ -122,16 +125,18 @@ public partial class PlayerScript : RigidBody3D
     // Throttle: push up along the drone's local Y axis
     ApplyCentralForce(-GlobalTransform.Basis.Y * throttle * throttleForce);
 
+    var fovScale = Mathf.Lerp(0.15f, 1f, (_camera.Fov - fovMin) / (fovMax - fovMin));
+
     // Yaw: rotate around local Y axis
-    ApplyTorque(GlobalTransform.Basis.Y * yaw * yawTorque);
+    ApplyTorque(GlobalTransform.Basis.Y * yaw * yawTorque * fovScale);
 
     // Roll: mouse X + roll axis rotates around local Z axis
     var rollAxis = -Input.GetAxis("roll_up", "roll_down") * .25f;
-    ApplyTorque(-GlobalTransform.Basis.Z * (_rollInput * mouseSensitivity + rollAxis) * rollTorque);
+    ApplyTorque(-GlobalTransform.Basis.Z * (_rollInput * mouseSensitivity + rollAxis) * rollTorque * fovScale);
 
     // Pitch: mouse Y + pitch axis rotates around local X axis
     var pitchAxis = Input.GetAxis("pitch_up", "pitch_down") * .25f;
-    ApplyTorque(GlobalTransform.Basis.X * (_pitchInput * mouseSensitivity + pitchAxis) * pitchTorque);
+    ApplyTorque(GlobalTransform.Basis.X * (_pitchInput * mouseSensitivity + pitchAxis) * pitchTorque * fovScale);
 
     _rollInput = 0f;
     _pitchInput = 0f;

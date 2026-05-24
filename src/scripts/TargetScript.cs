@@ -10,6 +10,8 @@ public partial class TargetScript : Node3D
   float _fireTimer;
   MeshInstance3D _healthBarFill;
   PlayerScript _player;
+  Camera3D _camera;
+  CanvasLayer _canvasLayer;
 
   readonly PackedScene _damageNumberPrefab = GD.Load<PackedScene>("res://prefabs/damage_number.tscn");
   readonly PackedScene _bulletPrefab = GD.Load<PackedScene>("res://prefabs/bullet.tscn");
@@ -19,6 +21,8 @@ public partial class TargetScript : Node3D
     _health = maxHealth;
     _healthBarFill = GetNode<MeshInstance3D>("HealthBar/Fill");
     _player = GetTree().CurrentScene.GetNode<PlayerScript>("Player");
+    _camera = _player.GetNode<Camera3D>("Mount/Camera3D");
+    _canvasLayer = _player.GetNode<CanvasLayer>("Mount/Camera3D/CanvasLayer");
   }
 
   public override void _PhysicsProcess(double delta)
@@ -55,7 +59,7 @@ public partial class TargetScript : Node3D
 
     var dmg = _damageNumberPrefab.Instantiate<DamageNumberScript>();
     GetTree().CurrentScene.AddChild(dmg);
-    dmg.Show(hitPosition + Vector3.Up * 0.5f, amount);
+    dmg.Show(hitPosition + Vector3.Up * 0.5f, amount, _camera, _canvasLayer);
 
     if (_health <= 0)
     {
