@@ -90,9 +90,16 @@ public partial class PlayerScript : RigidBody3D
       }
     }
 
-    if (@event is InputEventKey key && key.Keycode == Key.Escape && key.Pressed)
+    if (@event is InputEventKey key && key.Pressed)
     {
-      Input.MouseMode = Input.MouseModeEnum.Visible;
+      if (key.Keycode == Key.Escape)
+      {
+        Input.MouseMode = Input.MouseModeEnum.Visible;
+      }
+      else if (key.Keycode == Key.R)
+      {
+        GetTree().ReloadCurrentScene();
+      }
     }
   }
 
