@@ -5,7 +5,10 @@ public partial class TargetSpawnerScript : Node3D
   [Export] int count = 20;
   [Export] float radius = 100f;
 
-  PackedScene _targetPrefab = GD.Load<PackedScene>("res://prefabs/target.tscn");
+  [Export] int wormCount = 3;
+
+  readonly PackedScene _targetPrefab = GD.Load<PackedScene>("res://prefabs/target.tscn");
+  readonly PackedScene _wormPrefab = GD.Load<PackedScene>("res://prefabs/worm.tscn");
 
   public override void _Ready()
   {
@@ -13,6 +16,17 @@ public partial class TargetSpawnerScript : Node3D
     {
       SpawnTarget();
     }
+    for (var i = 0; i < wormCount; i++)
+    {
+      SpawnWorm();
+    }
+  }
+
+  void SpawnWorm()
+  {
+    var worm = _wormPrefab.Instantiate<WormScript>();
+    AddChild(worm);
+    worm.GlobalPosition = RandomOnSphere() * radius;
   }
 
   void SpawnTarget()

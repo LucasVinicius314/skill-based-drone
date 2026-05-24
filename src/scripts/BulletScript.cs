@@ -13,6 +13,8 @@ public partial class BulletScript : Node3D
   Vector3 _velocity;
   Owner _owner;
 
+  public Owner GetOwnerType() => _owner;
+
   readonly Queue<Vector3> _trailPositions = new();
   const int TrailLength = 16;
 
@@ -63,7 +65,9 @@ public partial class BulletScript : Node3D
       var collider = result["collider"].As<Node>();
       if (_owner == Owner.Player)
       {
-        collider.GetParentOrNull<TargetScript>()?.TakeDamage(1, result["position"].AsVector3());
+        var hitPos = result["position"].AsVector3();
+        collider.GetParentOrNull<TargetScript>()?.TakeDamage(1, hitPos);
+        collider.GetParentOrNull<WormSegmentScript>()?.TakeDamage(1);
       }
       else
       {

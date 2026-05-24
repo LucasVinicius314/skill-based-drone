@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://worm001"]
+
+[ext_resource type="Script" path="res://src/scripts/WormScript.cs" id="1_worm"]
+
+[node name="Worm" type="Node3D"]
+script = ExtResource("1_worm")
