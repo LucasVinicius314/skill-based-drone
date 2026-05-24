@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cfxaoqoik7fa3" path="res://src/scripts/PlayerScript.cs" id="1_72ieh"]
 [ext_resource type="Texture2D" uid="uid://cx5g2crwr6koo" path="res://skyboxes/industrial_sunset_puresky_4k.exr" id="2_4dohe"]
+[ext_resource type="Shader" uid="uid://di1wbtolu4tfr" path="res://shaders/invert.gdshader" id="3_r66lb"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_fp3wc"]
 size = Vector3(0.795, 0.37, 0.895)
@@ -23,10 +24,15 @@ sky_material = SubResource("PanoramaSkyMaterial_r66lb")
 background_mode = 2
 sky = SubResource("Sky_1txc5")
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_1txc5"]
+shader = ExtResource("3_r66lb")
+
 [sub_resource type="BoxMesh" id="BoxMesh_4dohe"]
 size = Vector3(0.025, 0.025, 0.395)
 
 [node name="Player" type="RigidBody3D" unique_id=1035182302]
+physics_interpolation_mode = 1
+continuous_cd = true
 angular_damp = 2.0
 script = ExtResource("1_72ieh")
 throttleForce = 57.44
@@ -59,6 +65,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="ColorRect" type="ColorRect" parent="Node3D/Camera3D/CanvasLayer/Control" unique_id=921121692]
+material = SubResource("ShaderMaterial_1txc5")
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -73,6 +80,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="ColorRect2" type="ColorRect" parent="Node3D/Camera3D/CanvasLayer/Control" unique_id=1371791780]
+material = SubResource("ShaderMaterial_1txc5")
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -87,6 +95,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="ColorRect3" type="ColorRect" parent="Node3D/Camera3D/CanvasLayer/Control" unique_id=1483430251]
+material = SubResource("ShaderMaterial_1txc5")
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
