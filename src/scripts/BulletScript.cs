@@ -4,16 +4,16 @@ using System.Linq;
 
 public partial class BulletScript : Node3D
 {
-  public enum Owner { Player, Enemy }
+  public enum Faction { Player, Enemy }
 
   [Export] float speed = 80f;
   [Export] float lifetime = 3f;
 
   float _elapsed;
   Vector3 _velocity;
-  Owner _owner;
+  Faction _owner;
 
-  public Owner GetOwnerType() => _owner;
+  public Faction GetFactionType() => _owner;
 
   readonly Queue<Vector3> _trailPositions = new();
   const int TrailLength = 16;
@@ -22,7 +22,7 @@ public partial class BulletScript : Node3D
   ImmediateMesh _immediateMesh;
   StandardMaterial3D _trailMaterial;
 
-  public void Launch(Vector3 origin, Vector3 forward, Owner owner = Owner.Player)
+  public void Launch(Vector3 origin, Vector3 forward, Faction owner = Faction.Player)
   {
     GlobalPosition = origin;
     _velocity = forward * speed;
@@ -33,14 +33,14 @@ public partial class BulletScript : Node3D
       ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
       Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
       VertexColorUseAsAlbedo = true,
-      AlbedoColor = owner == Owner.Player ? new Color(1f, 0.85f, 0.2f) : new Color(1f, 0.2f, 0.2f),
+      AlbedoColor = owner == Faction.Player ? new Color(1f, 0.85f, 0.2f) : new Color(1f, 0.2f, 0.2f),
     };
 
     _immediateMesh = new ImmediateMesh();
     _trailMesh = new MeshInstance3D { Mesh = _immediateMesh, MaterialOverride = _trailMaterial };
     GetTree().CurrentScene.AddChild(_trailMesh);
 
-    if (owner == Owner.Enemy)
+    if (owner == Faction.Enemy)
     {
       var audio = new AudioStreamPlayer3D
       {
@@ -76,7 +76,7 @@ public partial class BulletScript : Node3D
     if (result.Count > 0)
     {
       var collider = result["collider"].As<Node>();
-      if (_owner == Owner.Player)
+      if (_owner == Faction.Player)
       {
         var hitPos = result["position"].AsVector3();
         var target = collider.GetParentOrNull<TargetScript>() ?? collider as TargetScript;

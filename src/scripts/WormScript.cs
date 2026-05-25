@@ -66,7 +66,7 @@ public partial class WormScript : Node3D
       var forward = (_player.GlobalPosition - _segments[0].GlobalPosition).Normalized();
       var bullet = _bulletPrefab.Instantiate<BulletScript>();
       GetTree().CurrentScene.AddChild(bullet);
-      bullet.Launch(_segments[0].GlobalPosition, forward, BulletScript.Owner.Enemy);
+      bullet.Launch(_segments[0].GlobalPosition, forward, BulletScript.Faction.Enemy);
     }
 
     // each segment follows the path at a fixed spacing

@@ -45,7 +45,7 @@ public partial class TargetScript : Node3D
     var forward = (_player.GlobalPosition - GlobalPosition).Normalized();
     var bullet = _bulletPrefab.Instantiate<BulletScript>();
     GetTree().CurrentScene.AddChild(bullet);
-    bullet.Launch(GlobalPosition, forward, BulletScript.Owner.Enemy);
+    bullet.Launch(GlobalPosition, forward, BulletScript.Faction.Enemy);
   }
 
   public void TakeDamage(int amount, Vector3 hitPosition)

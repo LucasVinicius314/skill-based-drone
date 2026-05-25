@@ -27,6 +27,15 @@ public partial class MissileScript : Node3D
     _velocity = forward * speed;
     BuildMesh();
     BuildTrail();
+
+    var audio = new AudioStreamPlayer3D
+    {
+      Stream = GD.Load<AudioStream>("res://sounds/521377__jarusca__rocket-launch.mp3"),
+      MaxDistance = 500f,
+      Autoplay = true,
+    };
+    AddChild(audio);
+    audio.Finished += audio.QueueFree;
   }
 
   void BuildMesh()
