@@ -12,6 +12,7 @@ public partial class WormSegmentScript : Node3D
   public override void _Ready()
   {
     Health = MaxHealth;
+    AddToGroup("worm_segments");
     _player = GetTree().CurrentScene.GetNode<PlayerScript>("Player");
   }
 

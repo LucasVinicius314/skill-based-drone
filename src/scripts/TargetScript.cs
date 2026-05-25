@@ -19,6 +19,7 @@ public partial class TargetScript : Node3D
   public override void _Ready()
   {
     _health = maxHealth;
+    AddToGroup("targets");
     _healthBarFill = GetNode<MeshInstance3D>("HealthBar/Fill");
     _player = GetTree().CurrentScene.GetNode<PlayerScript>("Player");
     _camera = _player.GetNode<Camera3D>("Mount/Camera3D");

@@ -45,11 +45,11 @@ public partial class BulletScript : Node3D
       var audio = new AudioStreamPlayer3D
       {
         Stream = GD.Load<AudioStream>("res://sounds/653191__sebastianvdb__close-gun-shots-trim.mp3"),
-        GlobalPosition = origin,
         MaxDistance = 120f,
         Autoplay = true,
       };
       GetTree().CurrentScene.AddChild(audio);
+      audio.GlobalPosition = origin;
       audio.Finished += audio.QueueFree;
     }
   }
