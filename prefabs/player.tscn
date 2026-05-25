@@ -40,7 +40,7 @@ angular_damp = 2.0
 script = ExtResource("1_72ieh")
 throttleForce = 57.44
 yawTorque = 0.405
-pitchTorque = 7.9399999999999995
+pitchTorque = 7.94
 rollTorque = 7.89
 fireRate = 0.1
 missileFireRate = 0.475
@@ -147,3 +147,6 @@ max_distance = 60.0
 
 [node name="HitmarkerAudio" type="AudioStreamPlayer" parent="." unique_id=800000003]
 volume_db = -35.863
+
+[node name="MetalImpactAudio" type="AudioStreamPlayer" parent="." unique_id=800000004]
+volume_db = -24.233

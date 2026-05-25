@@ -15,6 +15,7 @@ public partial class BulletScript : Node3D
 
   public Faction GetFactionType() => _owner;
 
+  readonly PackedScene _impactPrefab = GD.Load<PackedScene>("res://prefabs/bullet_impact.tscn");
   readonly Queue<Vector3> _trailPositions = new();
   const int TrailLength = 16;
 
@@ -88,6 +89,9 @@ public partial class BulletScript : Node3D
       {
         (collider as PlayerScript ?? collider.GetParentOrNull<PlayerScript>())?.TakeDamage(1);
       }
+      var impact = _impactPrefab.Instantiate<BulletImpactScript>();
+      GetTree().CurrentScene.AddChild(impact);
+      impact.GlobalPosition = result["position"].AsVector3();
       QueueFree();
       return;
     }

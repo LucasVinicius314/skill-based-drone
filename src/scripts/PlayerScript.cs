@@ -31,6 +31,7 @@ public partial class PlayerScript : RigidBody3D
   AudioStreamPlayer3D _bladesAudio;
   AudioStreamPlayer3D _shootAudio;
   AudioStreamPlayer _hitmarkerAudio;
+  AudioStreamPlayer _metalImpactAudio;
   float _missileTimer;
 
   public override void _Ready()
@@ -45,10 +46,15 @@ public partial class PlayerScript : RigidBody3D
     _bladesAudio.Stream = GD.Load<AudioStream>("res://sounds/49483__lorenzosu__helicopterraw_30sec.wav");
     _shootAudio.Stream = GD.Load<AudioStream>("res://sounds/653191__sebastianvdb__close-gun-shots-trim.mp3");
     _hitmarkerAudio.Stream = GD.Load<AudioStream>("res://sounds/hitmarker.mp3");
+    _metalImpactAudio = GetNode<AudioStreamPlayer>("MetalImpactAudio");
+    _metalImpactAudio.Stream = GD.Load<AudioStream>("res://sounds/620077__ryankingart__metal-impact-trim.mp3");
     _camera.Fov = fovDefault;
     _targetFov = fovDefault;
     _bladesAudio.Finished += () => _bladesAudio.Play();
     _bladesAudio.Play();
+    ContactMonitor = true;
+    MaxContactsReported = 1;
+    BodyEntered += _ => _metalImpactAudio.Play();
     _health = maxHealth;
     _healthLabel = GetNode<Label>("Mount/Camera3D/CanvasLayer/Control/HealthLabel");
     UpdateHealthLabel();
@@ -61,6 +67,7 @@ public partial class PlayerScript : RigidBody3D
 
   public void TakeDamage(int amount)
   {
+    _metalImpactAudio.Play();
     _health = Mathf.Max(_health - amount, 0);
     UpdateHealthLabel();
 
