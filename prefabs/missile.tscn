@@ -6,4 +6,4 @@
 script = ExtResource("1_missile")
 speed = 91.16
 lifetime = 13.91
-splashRadius = 81.115
+splashRadius = 5.13

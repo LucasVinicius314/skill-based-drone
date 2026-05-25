@@ -1,13 +1,14 @@
-[gd_scene format=3 uid="uid://explosion_missile"]
+[gd_scene format=3 uid="uid://dygormhy06y8t"]
 
-[ext_resource type="Script" path="res://src/scripts/ExplosionScript.cs" id="1_explosion"]
-[ext_resource type="AudioStream" path="res://sounds/268557__cydon__explosion_001.mp3" id="2_audio"]
+[ext_resource type="Script" uid="uid://bn1jdcg3kdu42" path="res://src/scripts/ExplosionScript.cs" id="1_explosion"]
+[ext_resource type="AudioStream" uid="uid://bivfi711pqoea" path="res://sounds/268557__cydon__explosion_001.mp3" id="2_audio"]
 
-[node name="Explosion" type="Node3D"]
+[node name="Explosion" type="Node3D" unique_id=1235403503]
 script = ExtResource("1_explosion")
 
-[node name="Audio" type="AudioStreamPlayer3D" parent="."]
+[node name="Audio" type="AudioStreamPlayer3D" parent="." unique_id=52415857]
 stream = ExtResource("2_audio")
-max_distance = 2000.0
+volume_db = -27.961
 unit_size = 100.0
 autoplay = true
+max_distance = 2000.0

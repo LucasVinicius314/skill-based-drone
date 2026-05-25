@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using Godot;
 
 public partial class MissileScript : Node3D
@@ -33,6 +32,7 @@ public partial class MissileScript : Node3D
       Stream = GD.Load<AudioStream>("res://sounds/521377__jarusca__rocket-launch.mp3"),
       MaxDistance = 500f,
       Autoplay = true,
+      VolumeDb = -10,
     };
     AddChild(audio);
     audio.Finished += audio.QueueFree;
@@ -148,8 +148,13 @@ public partial class MissileScript : Node3D
   void SpawnSmokeParticle()
   {
     var rng = new RandomNumberGenerator();
+    var drift = new Vector3(
+      rng.RandfRange(-1.2f, 1.2f),
+      rng.RandfRange(0.3f, 1.5f),
+      rng.RandfRange(-1.2f, 1.2f)
+    );
     var smoke = new SmokeParticleScript();
-    smoke.Init(lifetime: 2.2f, startSize: 0.7f, endSize: 5f);
+    smoke.Init(lifetime: 2.2f, startSize: 0.5f, endSize: 6f, drift: drift);
     GetTree().CurrentScene.AddChild(smoke);
     smoke.GlobalPosition = GlobalPosition + _velocity.Normalized() * -0.6f + new Vector3(
       rng.RandfRange(-0.05f, 0.05f),

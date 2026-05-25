@@ -6,23 +6,24 @@ public partial class SmokeParticleScript : MeshInstance3D
   float _elapsed;
   float _startSize;
   float _endSize;
+  Vector3 _drift;
   StandardMaterial3D _mat;
 
-  public void Init(float lifetime, float startSize, float endSize)
+  public void Init(float lifetime, float startSize, float endSize, Vector3 drift = default)
   {
     _lifetime = lifetime;
     _startSize = startSize;
     _endSize = endSize;
+    _drift = drift;
 
     _mat = new StandardMaterial3D
     {
       ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
       Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
-      BillboardMode = BaseMaterial3D.BillboardModeEnum.Enabled,
       AlbedoColor = new Color(0.75f, 0.75f, 0.75f, 0.35f),
     };
 
-    Mesh = new QuadMesh { Size = Vector2.One * startSize };
+    Mesh = new SphereMesh { Radius = startSize * 0.5f, Height = startSize, RadialSegments = 6, Rings = 3 };
     MaterialOverride = _mat;
   }
 
@@ -34,6 +35,7 @@ public partial class SmokeParticleScript : MeshInstance3D
     var size = Mathf.Lerp(_startSize, _endSize, t);
     Scale = Vector3.One * size / _startSize;
     _mat.AlbedoColor = new Color(0.75f, 0.75f, 0.75f, Mathf.Lerp(0.35f, 0f, t));
+    Position += _drift * (float)delta;
 
     if (_elapsed >= _lifetime)
     {

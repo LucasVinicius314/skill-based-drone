@@ -12,7 +12,7 @@ public partial class ExplosionScript : Node3D
 
   public void Init(float radius)
   {
-    _radius = radius;
+    _radius = radius * 0.6f;
   }
 
   public override void _Ready()

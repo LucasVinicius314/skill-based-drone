@@ -167,7 +167,7 @@ public partial class PlayerScript : RigidBody3D
     }
 
     _missileTimer -= (float)delta;
-    if (Input.IsActionJustPressed("fire_missile") && _missileTimer <= 0f)
+    if (Input.IsActionPressed("fire_missile") && _missileTimer <= 0f)
     {
       _missileTimer = missileFireRate;
       var missile = _missilePrefab.Instantiate<MissileScript>();
