@@ -177,15 +177,10 @@ public partial class ExplosionScript : Node3D
     AddChild(_smoke);
     _smoke.Restart();
 
-    var audio = new AudioStreamPlayer3D
+    if (GetNodeOrNull<AudioStreamPlayer3D>("Audio") is { } audio)
     {
-      Stream = GD.Load<AudioStream>("res://sounds/268557__cydon__explosion_001.mp3"),
-      MaxDistance = 2000f,
-      UnitSize = 100f,
-      Autoplay = true,
-    };
-    AddChild(audio);
-    audio.Finished += audio.QueueFree;
+      audio.Finished += audio.QueueFree;
+    }
   }
 
   static GradientTexture1D MakeSmokeGradient()

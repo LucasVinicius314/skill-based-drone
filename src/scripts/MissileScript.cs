@@ -9,7 +9,7 @@ public partial class MissileScript : Node3D
   [Export] float splashRadius = 5f;
   [Export] int splashDamage = 3;
 
-  readonly PackedScene _explosionPrefab = GD.Load<PackedScene>("res://prefabs/explosion.tscn");
+  readonly PackedScene _explosionPrefab = GD.Load<PackedScene>("res://prefabs/explosion_missile.tscn");
 
   float _elapsed;
   float _smokeTimer;

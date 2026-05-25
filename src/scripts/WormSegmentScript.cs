@@ -8,6 +8,7 @@ public partial class WormSegmentScript : Node3D
   public WormScript Worm;
 
   PlayerScript _player;
+  readonly PackedScene _explosionPrefab = GD.Load<PackedScene>("res://prefabs/explosion_enemy.tscn");
 
   public override void _Ready()
   {
@@ -22,9 +23,18 @@ public partial class WormSegmentScript : Node3D
     Health -= amount;
     if (Health <= 0)
     {
+      SpawnExplosion(GlobalPosition);
       Worm?.OnSegmentDied(this);
       QueueFree();
     }
+  }
+
+  void SpawnExplosion(Vector3 position)
+  {
+    var explosion = _explosionPrefab.Instantiate<ExplosionScript>();
+    explosion.Init(2f);
+    GetTree().CurrentScene.AddChild(explosion);
+    explosion.GlobalPosition = position;
   }
 
   public void SetColor(Color color)

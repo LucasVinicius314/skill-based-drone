@@ -15,6 +15,7 @@ public partial class TargetScript : Node3D
 
   readonly PackedScene _damageNumberPrefab = GD.Load<PackedScene>("res://prefabs/damage_number.tscn");
   readonly PackedScene _bulletPrefab = GD.Load<PackedScene>("res://prefabs/bullet.tscn");
+  readonly PackedScene _explosionPrefab = GD.Load<PackedScene>("res://prefabs/explosion_enemy.tscn");
 
   public override void _Ready()
   {
@@ -64,7 +65,16 @@ public partial class TargetScript : Node3D
 
     if (_health <= 0)
     {
+      SpawnExplosion(GlobalPosition);
       QueueFree();
     }
+  }
+
+  void SpawnExplosion(Vector3 position)
+  {
+    var explosion = _explosionPrefab.Instantiate<ExplosionScript>();
+    explosion.Init(3f);
+    GetTree().CurrentScene.AddChild(explosion);
+    explosion.GlobalPosition = position;
   }
 }
