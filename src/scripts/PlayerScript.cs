@@ -19,6 +19,8 @@ public partial class PlayerScript : RigidBody3D
   float _pitchInput;
   float _rollInput;
   float _fireTimer;
+  HudScript _hud;
+  CanvasLayer _canvasLayer;
 
   [Export] float bladePitchIdle = 0.8f;
   [Export] float bladePitchMax = 1.4f;
@@ -58,6 +60,10 @@ public partial class PlayerScript : RigidBody3D
     _health = maxHealth;
     _healthLabel = GetNode<Label>("Mount/Camera3D/CanvasLayer/Control/HealthLabel");
     UpdateHealthLabel();
+
+    _canvasLayer = GetNode<CanvasLayer>("Mount/Camera3D/CanvasLayer");
+    _hud = new HudScript();
+    _canvasLayer.AddChild(_hud);
   }
 
   public void PlayHitmarker()
@@ -174,5 +180,27 @@ public partial class PlayerScript : RigidBody3D
       GetTree().CurrentScene.AddChild(missile);
       missile.Launch(_missileBarrel.GlobalPosition, -_missileBarrel.GlobalTransform.Basis.Z);
     }
+
+    UpdateHud();
+  }
+
+  void UpdateHud()
+  {
+    var vel = LinearVelocity;
+    _hud.SpeedTotal    = vel.Length();
+    _hud.SpeedVertical = vel.Y;
+    _hud.Altitude      = GlobalPosition.Y;
+
+    // heading: angle of drone's -Z (forward) projected onto XZ plane
+    var forward = -GlobalTransform.Basis.Z;
+    _hud.HeadingDeg = (Mathf.RadToDeg(Mathf.Atan2(forward.X, -forward.Z)) + 360f) % 360f;
+
+    // pitch: angle between forward and XZ plane
+    _hud.PitchDeg = Mathf.RadToDeg(Mathf.Asin(Mathf.Clamp(-forward.Y, -1f, 1f)));
+
+    // bank: signed angle between drone right axis and world horizontal plane
+    var right = GlobalTransform.Basis.X;
+    var rightHorizontalLen = new Vector3(right.X, 0, right.Z).Length();
+    _hud.BankDeg = Mathf.RadToDeg(Mathf.Atan2(right.Y, rightHorizontalLen));
   }
 }

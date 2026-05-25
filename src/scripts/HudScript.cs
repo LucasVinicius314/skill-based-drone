@@ -1,0 +1,261 @@
+using Godot;
+
+public partial class HudScript : Control
+{
+  // set each frame by PlayerScript
+  public float SpeedTotal;
+  public float SpeedVertical;
+  public float Altitude;
+  public float HeadingDeg;   // 0-360
+  public float PitchDeg;     // nose-up positive
+  public float BankDeg;      // right-roll positive
+
+  // colours
+  static readonly Color ColMain   = new Color(0.0f, 1.0f, 0.4f, 0.85f);
+  static readonly Color ColDim    = new Color(0.0f, 1.0f, 0.4f, 0.35f);
+  static readonly Color ColText   = new Color(0.0f, 1.0f, 0.4f, 1.0f);
+
+  // pitch ladder config
+  const float LadderDegSpacing = 10f;   // degrees between rungs
+  const float LadderPixPerDeg  = 8f;    // pixels per degree on screen
+  const float LadderHalfWidth  = 60f;
+  const float LadderTickGap    = 10f;   // gap in the centre of each rung
+  const int   LadderRange      = 9;     // rungs above+below horizon (±90°)
+
+  // compass tape config
+  const float CompassWidth     = 320f;
+  const float CompassHeight    = 28f;
+  const float CompassPixPerDeg = CompassWidth / 60f; // 60° visible window
+
+  Label _speedLabel;
+  Label _altLabel;
+  Label _hdgLabel;
+  Label _bankLabel;
+  Label _vsLabel;
+
+  public override void _Ready()
+  {
+    // fill parent
+    SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+
+    // --- text readout panel (bottom-left) ---
+    var panel = new PanelContainer();
+    panel.SetAnchorsAndOffsetsPreset(LayoutPreset.BottomLeft);
+    panel.Position = new Vector2(16, -160);
+    var style = new StyleBoxFlat { BgColor = new Color(0, 0, 0, 0.45f), CornerRadiusTopLeft = 4, CornerRadiusTopRight = 4, CornerRadiusBottomLeft = 4, CornerRadiusBottomRight = 4 };
+    panel.AddThemeStyleboxOverride("panel", style);
+    AddChild(panel);
+
+    var vbox = new VBoxContainer();
+    vbox.AddThemeConstantOverride("separation", 2);
+    panel.AddChild(vbox);
+
+    _speedLabel = MakeLabel("SPD  ---");
+    _vsLabel    = MakeLabel("V/S  ---");
+    _altLabel   = MakeLabel("ALT  ---");
+    _hdgLabel   = MakeLabel("HDG  ---");
+    _bankLabel  = MakeLabel("BANK ---");
+
+    vbox.AddChild(_speedLabel);
+    vbox.AddChild(_vsLabel);
+    vbox.AddChild(_altLabel);
+    vbox.AddChild(_hdgLabel);
+    vbox.AddChild(_bankLabel);
+  }
+
+  static Label MakeLabel(string text)
+  {
+    var lbl = new Label();
+    lbl.Text = text;
+    lbl.AddThemeColorOverride("font_color", ColText);
+    lbl.AddThemeFontSizeOverride("font_size", 13);
+    return lbl;
+  }
+
+  public override void _Process(double delta)
+  {
+    // update text labels
+    _speedLabel.Text = $"SPD  {SpeedTotal:F0} m/s";
+    _vsLabel.Text    = $"V/S  {(SpeedVertical >= 0 ? "+" : "")}{SpeedVertical:F1} m/s";
+    _altLabel.Text   = $"ALT  {Altitude:F0} m";
+    _hdgLabel.Text   = $"HDG  {HeadingDeg:F0}°";
+    _bankLabel.Text  = $"BANK {(BankDeg >= 0 ? "+" : "")}{BankDeg:F0}°";
+
+    QueueRedraw();
+  }
+
+  public override void _Draw()
+  {
+    var center = Size * 0.5f;
+    DrawArtificialHorizon(center);
+    DrawPitchLadder(center);
+    DrawCompassTape();
+    DrawBankIndicator(center);
+  }
+
+  // -------------------------------------------------------------------------
+  void DrawArtificialHorizon(Vector2 center)
+  {
+    // sky/ground split rectangle behind the ladder, rotated by bank
+    float bankRad = Mathf.DegToRad(BankDeg);
+    // horizon bar (2px thick line, same width as compass tape)
+    var halfLen = CompassWidth * 0.5f;
+    var cos = Mathf.Cos(bankRad);
+    var sin = Mathf.Sin(bankRad);
+    var offset = new Vector2(halfLen * cos, halfLen * sin);
+
+    // We rotate around center, but also shift vertically by pitch
+    var pivot = center + new Vector2(0, -PitchDeg * LadderPixPerDeg);
+    DrawLine(pivot - offset, pivot + offset, ColMain, 2f);
+  }
+
+  void DrawPitchLadder(Vector2 center)
+  {
+    float bankRad  = Mathf.DegToRad(BankDeg);
+    float cos      = Mathf.Cos(bankRad);
+    float sin      = Mathf.Sin(bankRad);
+
+    // clip drawing to a vertical band around centre
+    for (int i = -LadderRange; i <= LadderRange; i++)
+    {
+      float deg = i * LadderDegSpacing;
+      if (deg == 0f) continue; // horizon line drawn separately
+
+      // pixel offset from screen centre: positive pitch = up on screen
+      float yOffset = -(deg - PitchDeg) * LadderPixPerDeg;
+
+      // rung centre in un-rotated space
+      var rungCenter = new Vector2(0, yOffset);
+
+      // rotate rung centre by bank
+      var rungRotated = new Vector2(
+        rungCenter.X * cos - rungCenter.Y * sin,
+        rungCenter.X * sin + rungCenter.Y * cos
+      );
+
+      var worldCenter = center + rungRotated;
+
+      // half-width direction (along the rung, bank-rotated)
+      var rungDir  = new Vector2(cos, sin);
+      var rungPerp = new Vector2(-sin, cos); // perpendicular = up direction rotated
+
+      bool aboveHorizon = deg > 0;
+      var lineColor = aboveHorizon ? ColMain : ColDim;
+      float hw = LadderHalfWidth;
+
+      // left tick
+      var lStart = worldCenter - rungDir * hw;
+      var lEnd   = worldCenter - rungDir * LadderTickGap;
+      // right tick
+      var rStart = worldCenter + rungDir * LadderTickGap;
+      var rEnd   = worldCenter + rungDir * hw;
+
+      DrawLine(lStart, lEnd, lineColor, 1.5f);
+      DrawLine(rStart, rEnd, lineColor, 1.5f);
+
+      // small vertical serifs at outer ends
+      var serifLen = 6f * (aboveHorizon ? 1f : -1f);
+      DrawLine(lStart, lStart + rungPerp * serifLen, lineColor, 1.5f);
+      DrawLine(rEnd,   rEnd   + rungPerp * serifLen, lineColor, 1.5f);
+
+      // degree label on the right side
+      var labelPos = rEnd + rungDir * 4f;
+      DrawString(ThemeDB.FallbackFont, labelPos, $"{Mathf.Abs((int)deg)}",
+        HorizontalAlignment.Left, -1, 10, ColText);
+    }
+
+    // centre reticle — two short horizontal bars with a gap
+    var reticleY = center;
+    DrawLine(reticleY + new Vector2(-40, 0), reticleY + new Vector2(-12, 0), ColMain, 2f);
+    DrawLine(reticleY + new Vector2( 12, 0), reticleY + new Vector2( 40, 0), ColMain, 2f);
+    DrawLine(reticleY + new Vector2(-4, 0),  reticleY + new Vector2( 4, 0),  ColMain, 1f);
+  }
+
+  void DrawCompassTape(  )
+  {
+    var center = Size * 0.5f;
+    float tapeLeft = center.X - CompassWidth * 0.5f;
+    float tapeTop  = 12f;
+
+    // background
+    DrawRect(new Rect2(tapeLeft, tapeTop, CompassWidth, CompassHeight),
+      new Color(0, 0, 0, 0.5f));
+
+    // tick marks every 5°, labels every 30°
+    // snap to the nearest 5° grid so ticks slide continuously with heading
+    float headingFrac = HeadingDeg % 5f;  // sub-step fractional offset
+    for (int step = -13; step <= 13; step++)
+    {
+      float degOffset = step * 5f - headingFrac;
+      int absDegInt = ((int)Mathf.Round(HeadingDeg + degOffset) % 360 + 360) % 360;
+      float x = center.X + degOffset * CompassPixPerDeg;
+
+      bool isMajor = absDegInt % 30 == 0;
+      float tickH = isMajor ? CompassHeight * 0.6f : CompassHeight * 0.3f;
+      DrawLine(new Vector2(x, tapeTop + CompassHeight - tickH),
+               new Vector2(x, tapeTop + CompassHeight), ColMain, 1.5f);
+
+      if (isMajor)
+      {
+        var label = absDegInt switch
+        {
+          0   => "N",
+          90  => "E",
+          180 => "S",
+          270 => "W",
+          _   => $"{absDegInt}"
+        };
+        DrawString(ThemeDB.FallbackFont,
+          new Vector2(x, tapeTop + 13),
+          label, HorizontalAlignment.Center, -1, 11, ColText);
+      }
+    }
+
+    // centre lubber line
+    DrawLine(new Vector2(center.X, tapeTop),
+             new Vector2(center.X, tapeTop + CompassHeight), ColMain, 2f);
+
+    // border
+    DrawRect(new Rect2(tapeLeft, tapeTop, CompassWidth, CompassHeight),
+      ColDim, false, 1f);
+  }
+
+  void DrawBankIndicator(Vector2 center)
+  {
+    // arc at bottom of screen with a moving pointer
+    float radius   = 90f;
+    float arcY     = center.Y + 160f;
+    var   arcCenter = new Vector2(center.X, arcY);
+
+    // draw arc from -60° to +60° (in screen space, 0° = top)
+    int steps = 48;
+    for (int i = 0; i < steps; i++)
+    {
+      float a0 = Mathf.DegToRad(-60f + i * (120f / steps)) - Mathf.Pi * 0.5f;
+      float a1 = Mathf.DegToRad(-60f + (i + 1) * (120f / steps)) - Mathf.Pi * 0.5f;
+      DrawLine(
+        arcCenter + new Vector2(Mathf.Cos(a0), Mathf.Sin(a0)) * radius,
+        arcCenter + new Vector2(Mathf.Cos(a1), Mathf.Sin(a1)) * radius,
+        ColDim, 1.5f);
+    }
+
+    // tick marks at 0, ±10, ±20, ±30, ±45, ±60
+    foreach (var tickDeg in new[] { -60, -45, -30, -20, -10, 0, 10, 20, 30, 45, 60 })
+    {
+      float a = Mathf.DegToRad(tickDeg) - Mathf.Pi * 0.5f;
+      bool major = tickDeg % 30 == 0 || tickDeg == 0;
+      float inner = major ? radius - 10f : radius - 6f;
+      DrawLine(
+        arcCenter + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * inner,
+        arcCenter + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * radius,
+        ColMain, major ? 2f : 1.5f);
+    }
+
+    // bank pointer triangle (points inward toward arc centre)
+    float bankRad = Mathf.DegToRad(BankDeg) - Mathf.Pi * 0.5f;
+    var tip  = arcCenter + new Vector2(Mathf.Cos(bankRad), Mathf.Sin(bankRad)) * (radius - 14f);
+    var base1 = arcCenter + new Vector2(Mathf.Cos(bankRad - 0.08f), Mathf.Sin(bankRad - 0.08f)) * (radius + 2f);
+    var base2 = arcCenter + new Vector2(Mathf.Cos(bankRad + 0.08f), Mathf.Sin(bankRad + 0.08f)) * (radius + 2f);
+    DrawColoredPolygon(new Vector2[] { tip, base1, base2 }, ColMain);
+  }
+}
