@@ -7,12 +7,17 @@ public partial class MissileScript : Node3D
   [Export] float lifetime = 6f;
   [Export] float splashRadius = 5f;
   [Export] int splashDamage = 3;
+  [Export] float seekerRange = 30f;
+  [Export] float turnRate = 3.5f;
+  [Export] float armingDistance = 4f;
 
   readonly PackedScene _explosionPrefab = GD.Load<PackedScene>("res://prefabs/explosion_missile.tscn");
 
   float _elapsed;
   float _smokeTimer;
+  float _distanceTravelled;
   Vector3 _velocity;
+  Node3D _lockTarget;
 
   readonly Queue<Vector3> _trailPositions = new();
   const int TrailLength = 32;
@@ -80,6 +85,40 @@ public partial class MissileScript : Node3D
     GetTree().CurrentScene.AddChild(_trailMesh);
   }
 
+  void TryAcquireLock()
+  {
+    var best = float.MaxValue;
+    Node3D found = null;
+
+    foreach (var node in GetTree().GetNodesInGroup("targets"))
+    {
+      if (node is TargetScript t)
+      {
+        var dist = GlobalPosition.DistanceTo(t.GlobalPosition);
+        if (dist < seekerRange && dist < best)
+        {
+          best = dist;
+          found = t;
+        }
+      }
+    }
+
+    foreach (var node in GetTree().GetNodesInGroup("worm_segments"))
+    {
+      if (node is WormSegmentScript w)
+      {
+        var dist = GlobalPosition.DistanceTo(w.GlobalPosition);
+        if (dist < seekerRange && dist < best)
+        {
+          best = dist;
+          found = w;
+        }
+      }
+    }
+
+    _lockTarget = found;
+  }
+
   public override void _PhysicsProcess(double delta)
   {
     _elapsed += (float)delta;
@@ -89,16 +128,35 @@ public partial class MissileScript : Node3D
       return;
     }
 
-    var move = _velocity * (float)delta;
-    var query = new PhysicsRayQueryParameters3D
+    if (_lockTarget == null || !IsInstanceValid(_lockTarget))
     {
-      From = GlobalPosition,
-      To = GlobalPosition + move,
-      CollideWithAreas = true,
-      CollideWithBodies = true,
-    };
+      TryAcquireLock();
+    }
 
-    var result = GetWorld3D().DirectSpaceState.IntersectRay(query);
+    if (_lockTarget != null && IsInstanceValid(_lockTarget))
+    {
+      var toTarget = (_lockTarget.GlobalPosition - GlobalPosition).Normalized();
+      var desired = toTarget * speed;
+      _velocity = _velocity.Lerp(desired, turnRate * (float)delta);
+      _velocity = _velocity.Normalized() * speed;
+    }
+
+    var move = _velocity * (float)delta;
+    _distanceTravelled += move.Length();
+
+    var result = new Godot.Collections.Dictionary();
+    if (_distanceTravelled >= armingDistance)
+    {
+      var query = new PhysicsRayQueryParameters3D
+      {
+        From = GlobalPosition,
+        To = GlobalPosition + move,
+        CollideWithAreas = true,
+        CollideWithBodies = true,
+      };
+      result = GetWorld3D().DirectSpaceState.IntersectRay(query);
+    }
+
     if (result.Count > 0)
     {
       var hitPos = result["position"].AsVector3();

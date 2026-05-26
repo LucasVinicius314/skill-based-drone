@@ -105,7 +105,7 @@ public partial class HudScript : Control
     var offset = new Vector2(halfLen * cos, halfLen * sin);
 
     // We rotate around center, but also shift vertically by pitch
-    var pivot = center + new Vector2(0, -PitchDeg * LadderPixPerDeg);
+    var pivot = center + new Vector2(0, PitchDeg * LadderPixPerDeg);
     DrawLine(pivot - offset, pivot + offset, ColMain, 2f);
   }
 
@@ -119,7 +119,7 @@ public partial class HudScript : Control
     for (int i = -LadderRange; i <= LadderRange; i++)
     {
       float deg = i * LadderDegSpacing;
-      if (deg == 0f) continue; // horizon line drawn separately
+      if (Mathf.IsZeroApprox(deg)) continue; // horizon line drawn separately
 
       // pixel offset from screen centre: positive pitch = up on screen
       float yOffset = -(deg - PitchDeg) * LadderPixPerDeg;

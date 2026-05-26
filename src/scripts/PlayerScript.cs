@@ -149,11 +149,11 @@ public partial class PlayerScript : RigidBody3D
     ApplyTorque(GlobalTransform.Basis.Y * yaw * yawTorque * fovScale);
 
     // Roll: mouse X + roll axis rotates around local Z axis
-    var rollAxis = -Input.GetAxis("roll_up", "roll_down") * .25f;
+    var rollAxis = -Input.GetAxis("roll_up", "roll_down") * .1f;
     ApplyTorque(-GlobalTransform.Basis.Z * (_rollInput * mouseSensitivity + rollAxis) * rollTorque * fovScale);
 
     // Pitch: mouse Y + pitch axis rotates around local X axis
-    var pitchAxis = Input.GetAxis("pitch_up", "pitch_down") * .25f;
+    var pitchAxis = Input.GetAxis("pitch_up", "pitch_down") * .1f;
     ApplyTorque(GlobalTransform.Basis.X * (_pitchInput * mouseSensitivity + pitchAxis) * pitchTorque * fovScale);
 
     _rollInput = 0f;
@@ -187,16 +187,16 @@ public partial class PlayerScript : RigidBody3D
   void UpdateHud()
   {
     var vel = LinearVelocity;
-    _hud.SpeedTotal    = vel.Length();
+    _hud.SpeedTotal = vel.Length();
     _hud.SpeedVertical = vel.Y;
-    _hud.Altitude      = GlobalPosition.Y;
+    _hud.Altitude = GlobalPosition.Y;
 
     // heading: angle of drone's -Z (forward) projected onto XZ plane
     var forward = -GlobalTransform.Basis.Z;
     _hud.HeadingDeg = (Mathf.RadToDeg(Mathf.Atan2(forward.X, -forward.Z)) + 360f) % 360f;
 
     // pitch: angle between forward and XZ plane
-    _hud.PitchDeg = Mathf.RadToDeg(Mathf.Asin(Mathf.Clamp(-forward.Y, -1f, 1f)));
+    _hud.PitchDeg = Mathf.RadToDeg(Mathf.Asin(Mathf.Clamp(forward.Y, -1f, 1f)));
 
     // bank: signed angle between drone right axis and world horizontal plane
     var right = GlobalTransform.Basis.X;
