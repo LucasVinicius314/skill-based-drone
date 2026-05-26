@@ -9,6 +9,8 @@ public partial class SmokeParticleScript : MeshInstance3D
   Vector3 _drift;
   StandardMaterial3D _mat;
 
+  static readonly SphereMesh SharedMesh = new() { Radius = 0.5f, Height = 1f, RadialSegments = 6, Rings = 3 };
+
   public void Init(float lifetime, float startSize, float endSize, Vector3 drift = default)
   {
     _lifetime = lifetime;
@@ -23,8 +25,9 @@ public partial class SmokeParticleScript : MeshInstance3D
       AlbedoColor = new Color(0.75f, 0.75f, 0.75f, 0.35f),
     };
 
-    Mesh = new SphereMesh { Radius = startSize * 0.5f, Height = startSize, RadialSegments = 6, Rings = 3 };
+    Mesh = SharedMesh;
     MaterialOverride = _mat;
+    Scale = Vector3.One * startSize;
   }
 
   public override void _Process(double delta)

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Godot;
 
 public partial class MissileScript : Node3D
@@ -13,24 +12,26 @@ public partial class MissileScript : Node3D
 
   readonly PackedScene _explosionPrefab = GD.Load<PackedScene>("res://prefabs/explosion_missile.tscn");
 
+  static readonly StandardMaterial3D MatBody  = new() { AlbedoColor = new Color(0.3f, 0.3f, 0.35f) };
+  static readonly StandardMaterial3D MatNose  = new() { AlbedoColor = new Color(0.8f, 0.2f, 0.1f) };
+  static readonly StandardMaterial3D MatFin   = new() { AlbedoColor = new Color(0.2f, 0.2f, 0.25f) };
+
   float _elapsed;
   float _smokeTimer;
   float _distanceTravelled;
   Vector3 _velocity;
   Node3D _lockTarget;
+  bool _forcedTarget;
 
-  readonly Queue<Vector3> _trailPositions = new();
-  const int TrailLength = 32;
-  MeshInstance3D _trailMesh;
-  ImmediateMesh _immediateMesh;
 
-  public void Launch(Vector3 origin, Vector3 forward)
+  public void Launch(Vector3 origin, Vector3 forward, Node3D forcedTarget = null)
   {
     GlobalPosition = origin;
     LookAt(origin + forward, Vector3.Up);
     _velocity = forward * speed;
+    _lockTarget = forcedTarget;
+    _forcedTarget = forcedTarget != null;
     BuildMesh();
-    BuildTrail();
 
     var audio = new AudioStreamPlayer3D
     {
@@ -49,15 +50,15 @@ public partial class MissileScript : Node3D
     var bodyMesh = new CapsuleMesh { Radius = 0.07f, Height = 0.5f };
     body.Mesh = bodyMesh;
     body.RotationDegrees = new Vector3(90, 0, 0);
-    body.MaterialOverride = new StandardMaterial3D { AlbedoColor = new Color(0.3f, 0.3f, 0.35f) };
+    body.MaterialOverride = MatBody;
     AddChild(body);
 
     var nose = new MeshInstance3D { Mesh = new SphereMesh { Radius = 0.07f, Height = 0.14f } };
     nose.Position = new Vector3(0, 0, -0.25f);
-    nose.MaterialOverride = new StandardMaterial3D { AlbedoColor = new Color(0.8f, 0.2f, 0.1f) };
+    nose.MaterialOverride = MatNose;
     AddChild(nose);
 
-    var finMat = new StandardMaterial3D { AlbedoColor = new Color(0.2f, 0.2f, 0.25f) };
+    var finMat = MatFin;
     for (var i = 0; i < 4; i++)
     {
       var fin = new MeshInstance3D { Mesh = new BoxMesh { Size = new Vector3(0.01f, 0.12f, 0.14f) } };
@@ -68,22 +69,6 @@ public partial class MissileScript : Node3D
     }
   }
 
-  void BuildTrail()
-  {
-    _immediateMesh = new ImmediateMesh();
-    _trailMesh = new MeshInstance3D
-    {
-      Mesh = _immediateMesh,
-      MaterialOverride = new StandardMaterial3D
-      {
-        ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
-        Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
-        VertexColorUseAsAlbedo = true,
-        AlbedoColor = new Color(0.9f, 0.5f, 0.1f),
-      },
-    };
-    GetTree().CurrentScene.AddChild(_trailMesh);
-  }
 
   void TryAcquireLock()
   {
@@ -92,7 +77,7 @@ public partial class MissileScript : Node3D
 
     foreach (var node in GetTree().GetNodesInGroup("targets"))
     {
-      if (node is TargetScript t)
+      if (node is Node3D t)
       {
         var dist = GlobalPosition.DistanceTo(t.GlobalPosition);
         if (dist < seekerRange && dist < best)
@@ -128,7 +113,7 @@ public partial class MissileScript : Node3D
       return;
     }
 
-    if (_lockTarget == null || !IsInstanceValid(_lockTarget))
+    if (!_forcedTarget && (_lockTarget == null || !IsInstanceValid(_lockTarget)))
     {
       TryAcquireLock();
     }
@@ -172,36 +157,14 @@ public partial class MissileScript : Node3D
     GlobalPosition += move;
     LookAt(GlobalPosition + _velocity.Normalized(), Vector3.Up);
 
-    _trailPositions.Enqueue(GlobalPosition);
-    if (_trailPositions.Count > TrailLength)
-    {
-      _trailPositions.Dequeue();
-    }
-    DrawTrail();
-
     _smokeTimer -= (float)delta;
     if (_smokeTimer <= 0f)
     {
-      _smokeTimer = 0.012f;
+      _smokeTimer = 0.06f;
       SpawnSmokeParticle();
     }
   }
 
-  void DrawTrail()
-  {
-    _immediateMesh.ClearSurfaces();
-    if (_trailPositions.Count < 2) return;
-
-    _immediateMesh.SurfaceBegin(Mesh.PrimitiveType.LineStrip);
-    var positions = _trailPositions.ToArray();
-    for (var i = 0; i < positions.Length; i++)
-    {
-      var alpha = (float)i / positions.Length;
-      _immediateMesh.SurfaceSetColor(new Color(1f, 0.5f, 0.1f, alpha));
-      _immediateMesh.SurfaceAddVertex(positions[i]);
-    }
-    _immediateMesh.SurfaceEnd();
-  }
 
   void SpawnSmokeParticle()
   {
@@ -212,7 +175,7 @@ public partial class MissileScript : Node3D
       rng.RandfRange(-1.2f, 1.2f)
     );
     var smoke = new SmokeParticleScript();
-    smoke.Init(lifetime: 2.2f, startSize: 0.5f, endSize: 6f, drift: drift);
+    smoke.Init(lifetime: 1.2f, startSize: 0.5f, endSize: 4f, drift: drift);
     GetTree().CurrentScene.AddChild(smoke);
     smoke.GlobalPosition = GlobalPosition + _velocity.Normalized() * -0.6f + new Vector3(
       rng.RandfRange(-0.05f, 0.05f),
@@ -223,11 +186,21 @@ public partial class MissileScript : Node3D
 
   void ApplySplash(Vector3 hitPos)
   {
+    var player = GetTree().CurrentScene.GetNodeOrNull<PlayerScript>("Player");
+    if (player != null && player.GlobalPosition.DistanceTo(hitPos) <= splashRadius)
+    {
+      player.TakeDamage(splashDamage);
+    }
+
     foreach (var target in GetTree().GetNodesInGroup("targets"))
     {
       if (target is TargetScript t && t.GlobalPosition.DistanceTo(hitPos) <= splashRadius)
       {
         t.TakeDamage(splashDamage, hitPos);
+      }
+      else if (target is TankScript tank && tank.GlobalPosition.DistanceTo(hitPos) <= splashRadius)
+      {
+        tank.TakeDamage(splashDamage, hitPos);
       }
     }
 
@@ -240,8 +213,4 @@ public partial class MissileScript : Node3D
     }
   }
 
-  public override void _ExitTree()
-  {
-    if (IsInstanceValid(_trailMesh)) _trailMesh.QueueFree();
-  }
 }

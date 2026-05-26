@@ -1,0 +1,76 @@
+[gd_scene format=3 uid="uid://tank_prefab_001"]
+
+[ext_resource type="Script" path="res://src/scripts/TankScript.cs" id="1_tank"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_body"]
+albedo_color = Color(0.25, 0.3, 0.15, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_body"]
+material = SubResource("StandardMaterial3D_body")
+size = Vector3(2.5, 0.8, 3.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_turret"]
+albedo_color = Color(0.2, 0.25, 0.1, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_turret"]
+material = SubResource("StandardMaterial3D_turret")
+size = Vector3(1.4, 0.6, 1.4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_barrel"]
+albedo_color = Color(0.15, 0.15, 0.1, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_barrel"]
+material = SubResource("StandardMaterial3D_barrel")
+size = Vector3(0.2, 0.2, 1.5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_tank"]
+size = Vector3(2.5, 0.8, 3.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bg"]
+albedo_color = Color(0.2, 0.2, 0.2, 1)
+shading_mode = 1
+no_depth_test = true
+
+[sub_resource type="BoxMesh" id="BoxMesh_bg"]
+material = SubResource("StandardMaterial3D_bg")
+size = Vector3(4, 0.4, 0.01)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fill"]
+albedo_color = Color(0.1, 1, 0.1, 1)
+shading_mode = 1
+no_depth_test = true
+
+[sub_resource type="BoxMesh" id="BoxMesh_fill"]
+material = SubResource("StandardMaterial3D_fill")
+size = Vector3(4, 0.4, 0.01)
+
+[node name="Tank" type="Node3D"]
+script = ExtResource("1_tank")
+
+[node name="Body" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_body")
+
+[node name="Turret" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+
+[node name="TurretMesh" type="MeshInstance3D" parent="Turret"]
+mesh = SubResource("BoxMesh_turret")
+
+[node name="Barrel" type="MeshInstance3D" parent="Turret"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.5)
+mesh = SubResource("BoxMesh_barrel")
+
+[node name="Area3D" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D"]
+shape = SubResource("BoxShape3D_tank")
+
+[node name="HealthBar" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0)
+
+[node name="Background" type="MeshInstance3D" parent="HealthBar"]
+mesh = SubResource("BoxMesh_bg")
+
+[node name="Fill" type="MeshInstance3D" parent="HealthBar"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.02)
+mesh = SubResource("BoxMesh_fill")

@@ -82,8 +82,10 @@ public partial class BulletScript : Node3D
         var hitPos = result["position"].AsVector3();
         var target = collider.GetParentOrNull<TargetScript>() ?? collider as TargetScript;
         var worm = collider.GetParentOrNull<WormSegmentScript>() ?? collider as WormSegmentScript;
+        var tank = collider.GetParentOrNull<TankScript>() ?? collider as TankScript;
         target?.TakeDamage(1, hitPos);
         worm?.TakeDamage(1);
+        tank?.TakeDamage(1, hitPos);
       }
       else
       {

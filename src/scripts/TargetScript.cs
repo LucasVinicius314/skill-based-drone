@@ -9,6 +9,7 @@ public partial class TargetScript : Node3D
   int _health;
   float _fireTimer;
   MeshInstance3D _healthBarFill;
+  Node3D _healthBar;
   PlayerScript _player;
   Camera3D _camera;
   CanvasLayer _canvasLayer;
@@ -21,6 +22,7 @@ public partial class TargetScript : Node3D
   {
     _health = maxHealth;
     AddToGroup("targets");
+    _healthBar = GetNode<Node3D>("HealthBar");
     _healthBarFill = GetNode<MeshInstance3D>("HealthBar/Fill");
     _player = GetTree().CurrentScene.GetNode<PlayerScript>("Player");
     _camera = _player.GetNode<Camera3D>("Mount/Camera3D");
@@ -32,6 +34,8 @@ public partial class TargetScript : Node3D
     if (_player == null) return;
 
     LookAt(_player.GlobalPosition, Vector3.Up);
+
+    _healthBar.LookAt(_camera.GlobalPosition, Vector3.Up);
 
     _fireTimer -= (float)delta;
     if (_fireTimer <= 0f)
