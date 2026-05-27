@@ -34,7 +34,11 @@ public partial class PlayerScript : RigidBody3D
   AudioStreamPlayer3D _shootAudio;
   AudioStreamPlayer _hitmarkerAudio;
   AudioStreamPlayer _metalImpactAudio;
+  AudioStreamPlayer _lockOnAudio;
+  AudioStreamGeneratorPlayback _lockOnPlayback;
   float _missileTimer;
+  float _lockOnBeepTimer;
+  float _lockOnPhase;
 
   public override void _Ready()
   {
@@ -64,6 +68,12 @@ public partial class PlayerScript : RigidBody3D
     _canvasLayer = GetNode<CanvasLayer>("Mount/Camera3D/CanvasLayer");
     _hud = new HudScript();
     _canvasLayer.AddChild(_hud);
+
+    var gen = new AudioStreamGenerator { MixRate = 44100f, BufferLength = 0.1f };
+    _lockOnAudio = new AudioStreamPlayer { Stream = gen, VolumeDb = -20f };
+    AddChild(_lockOnAudio);
+    _lockOnAudio.Play();
+    _lockOnPlayback = (AudioStreamGeneratorPlayback)_lockOnAudio.GetStreamPlayback();
   }
 
   public void PlayHitmarker()
@@ -182,6 +192,55 @@ public partial class PlayerScript : RigidBody3D
     }
 
     UpdateHud();
+    UpdateLockOnAlarm((float)delta);
+  }
+
+  void UpdateLockOnAlarm(float delta)
+  {
+    var closestDist = float.MaxValue;
+    foreach (var node in GetTree().GetNodesInGroup("missiles"))
+    {
+      if (node is MissileScript m && m.IsHomingOnPlayer(this))
+      {
+        var dist = GlobalPosition.DistanceTo(m.GlobalPosition);
+        if (dist < closestDist)
+        {
+          closestDist = dist;
+        }
+      }
+    }
+
+    if (closestDist > 9e37f)
+    {
+      _lockOnBeepTimer = 0f;
+      return;
+    }
+
+    // beep interval shrinks from 0.6s (far) to 0.08s (close, ~30m)
+    var beepInterval = Mathf.Lerp(0.08f, 0.6f, Mathf.Clamp(closestDist / 80f, 0f, 1f));
+    _lockOnBeepTimer -= delta;
+    if (_lockOnBeepTimer <= 0f)
+    {
+      _lockOnBeepTimer = beepInterval;
+      FillBeepTone(880f, 0.06f);
+    }
+  }
+
+  void FillBeepTone(float frequency, float duration)
+  {
+    var sampleRate = 44100f;
+    var numSamples = (int)(sampleRate * duration);
+    var frames = new Vector2[numSamples];
+    for (var i = 0; i < numSamples; i++)
+    {
+      var t = i / sampleRate;
+      // fade out quickly to avoid clicks
+      var envelope = 1f - (i / (float)numSamples);
+      var sample = Mathf.Sin(2f * Mathf.Pi * frequency * t + _lockOnPhase) * envelope * 0.6f;
+      frames[i] = new Vector2(sample, sample);
+    }
+    _lockOnPhase = (_lockOnPhase + 2f * Mathf.Pi * frequency * duration) % (2f * Mathf.Pi);
+    _lockOnPlayback.PushBuffer(frames);
   }
 
   void UpdateHud()

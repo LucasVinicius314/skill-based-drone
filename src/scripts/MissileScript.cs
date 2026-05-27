@@ -12,9 +12,9 @@ public partial class MissileScript : Node3D
 
   readonly PackedScene _explosionPrefab = GD.Load<PackedScene>("res://prefabs/explosion_missile.tscn");
 
-  static readonly StandardMaterial3D MatBody  = new() { AlbedoColor = new Color(0.3f, 0.3f, 0.35f) };
-  static readonly StandardMaterial3D MatNose  = new() { AlbedoColor = new Color(0.8f, 0.2f, 0.1f) };
-  static readonly StandardMaterial3D MatFin   = new() { AlbedoColor = new Color(0.2f, 0.2f, 0.25f) };
+  static readonly StandardMaterial3D MatBody = new() { AlbedoColor = new Color(0.3f, 0.3f, 0.35f) };
+  static readonly StandardMaterial3D MatNose = new() { AlbedoColor = new Color(0.8f, 0.2f, 0.1f) };
+  static readonly StandardMaterial3D MatFin = new() { AlbedoColor = new Color(0.2f, 0.2f, 0.25f) };
 
   float _elapsed;
   float _smokeTimer;
@@ -23,6 +23,14 @@ public partial class MissileScript : Node3D
   Node3D _lockTarget;
   bool _forcedTarget;
 
+  public bool IsHomingOnPlayer(PlayerScript player) =>
+    _lockTarget != null && IsInstanceValid(_lockTarget) && _lockTarget == player;
+
+
+  public override void _Ready()
+  {
+    AddToGroup("missiles");
+  }
 
   public void Launch(Vector3 origin, Vector3 forward, Node3D forcedTarget = null)
   {
