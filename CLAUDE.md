@@ -37,15 +37,42 @@ the drone should behave like an fpv drone with first person camera controls just
 
 * `PhysicsRayQueryParameters3D` has separate `CollideWithAreas` and `CollideWithBodies` flags — if either is false the ray passes through those colliders silently. player bullets need both true to hit walls and enemies
 * `IntersectShape` can be unreliable for splash damage across mixed collider types and layers — iterating `GetTree().GetNodesInGroup()` with a distance check is simpler and more predictable
-* to use groups, call `AddToGroup("name")` in `_Ready()`. current groups: `"targets"` (TargetScript),  `"worm_segments"` (WormSegmentScript)
+* to use groups, call `AddToGroup("name")` in `_Ready()`. current groups: `"targets"` (TargetScript, TankScript),  `"worm_segments"` (WormSegmentScript)
 
 ## Architecture patterns used
 
-* procedural mesh building in code (missile body, fins, trails) using `MeshInstance3D` + `ImmediateMesh` for trails,  `CapsuleMesh`/`BoxMesh`/`SphereMesh` for geometry
-* smoke trail: spawn `SmokeParticleScript` instances (billboard `QuadMesh`) at fixed intervals, each expands and fades in world space
+* procedural mesh building in code (missile body, fins) using `CapsuleMesh`/`BoxMesh`/`SphereMesh` for geometry
+* smoke trail: spawn `SmokeParticleScript` instances (SphereMesh) at fixed intervals (~60ms), each expands and fades in world space. smoke lifetime is short (1.2s) to keep transparent object count low
 * damage numbers: `DamageNumberScript` extends `Node3D`, creates a 2D `Label` child on the player's `CanvasLayer`, projects world position each frame via `camera.UnprojectPosition()`
 * explosion: `ExplosionScript` spawns layered `GpuParticles3D` (fireball, debris, sparks, smoke) + flash sphere + shockwave torus, all scaled by a `radius` param passed via `Init(float radius)` before `AddChild`. smoke particles are reparented to scene root before the explosion node frees so they outlive it
 * long-lived particles that must outlive their parent: `RemoveChild(node)` → `GetTree().CurrentScene.AddChild(node)` → restore `GlobalPosition` → hook `node.Finished += node.QueueFree`
+
+## Performance gotchas
+
+* every `new StandardMaterial3D` allocates a GPU descriptor — share static materials across instances for frequently-spawned objects (missiles, particles). D3D12 descriptor heap exhaustion shows as `uniform_set_create` errors
+* `ImmediateMesh` rebuilt every frame per object is expensive in the transparent pass — avoid for frequently-spawned objects; use `GpuParticles3D` or pre-built meshes instead
+* `SmokeParticleScript` shares a static `SphereMesh` but still creates one `StandardMaterial3D` per instance (needed for per-instance alpha fade). keep spawn rate and lifetime low to bound the count
+* `Basis.Slerp` throws `InvalidOperationException` if the basis is not normalized — call `.Orthonormalized()` before `Slerp` on any basis that may have been affected by physics
+
+## Missile system
+
+* `MissileScript.Launch(origin, forward, forcedTarget)` — pass a `forcedTarget` to lock the seeker onto a specific node (e.g. player) and skip `TryAcquireLock` entirely
+* arming distance (default 4m) prevents self-detonation when launching at speed — collision detection is skipped until the missile has travelled that far
+* `ApplySplash` checks the player node by path (`"Player"`) in addition to groups, so enemy missiles damage the player
+* homing seeker searches `"targets"` group + `"worm_segments"` group — any `Node3D` in those groups is a valid lock
+
+## Health bar billboarding
+
+* health bars are `Node3D` parents with two `MeshInstance3D` children (background + fill), positioned above the enemy
+* since enemies rotate their whole body with `LookAt`, the health bar must be explicitly re-oriented each frame: `_healthBar.LookAt(_camera.GlobalPosition, Vector3.Up)`
+* the fill bar is scaled and offset on X to represent remaining health: `Scale.X = health/maxHealth`, `Origin.X = (health/maxHealth - 1) * 0.5`
+
+## Ground enemies (TankScript)
+
+* tanks spawn via `TargetSpawnerScript` using a downward raycast from a random XZ position to find terrain surface — `CollideWithAreas = false`, `CollideWithBodies = true`
+* tanks snap to ground each frame they move using the same raycast pattern
+* `Basis.LookingAt` requires a non-zero, non-parallel direction — always compute `flatDir` from the XZ projection of `toPlayer` before calling it
+* tank barrel node path: `Turret/Barrel` — cache it in `_Ready` to avoid `GetNode` exceptions mid-physics-process
 
 ## Sounds folder
 
