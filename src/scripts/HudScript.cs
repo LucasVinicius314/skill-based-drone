@@ -87,26 +87,9 @@ public partial class HudScript : Control
   public override void _Draw()
   {
     var center = Size * 0.5f;
-    DrawArtificialHorizon(center);
     DrawPitchLadder(center);
     DrawCompassTape();
     DrawBankIndicator(center);
-  }
-
-  // -------------------------------------------------------------------------
-  void DrawArtificialHorizon(Vector2 center)
-  {
-    // sky/ground split rectangle behind the ladder, rotated by bank
-    float bankRad = Mathf.DegToRad(BankDeg);
-    // horizon bar (2px thick line, same width as compass tape)
-    var halfLen = CompassWidth * 0.5f;
-    var cos = Mathf.Cos(bankRad);
-    var sin = Mathf.Sin(bankRad);
-    var offset = new Vector2(halfLen * cos, halfLen * sin);
-
-    // We rotate around center, but also shift vertically by pitch
-    var pivot = center + new Vector2(0, PitchDeg * LadderPixPerDeg);
-    DrawLine(pivot - offset, pivot + offset, ColMain, 2f);
   }
 
   void DrawPitchLadder(Vector2 center)
@@ -119,24 +102,22 @@ public partial class HudScript : Control
     for (int i = -LadderRange; i <= LadderRange; i++)
     {
       float deg = i * LadderDegSpacing;
-      if (Mathf.IsZeroApprox(deg)) continue; // horizon line drawn separately
-
-      // pixel offset from screen centre: positive pitch = up on screen
       float yOffset = -(deg - PitchDeg) * LadderPixPerDeg;
-
-      // rung centre in un-rotated space
       var rungCenter = new Vector2(0, yOffset);
-
-      // rotate rung centre by bank
       var rungRotated = new Vector2(
         rungCenter.X * cos - rungCenter.Y * sin,
         rungCenter.X * sin + rungCenter.Y * cos
       );
-
       var worldCenter = center + rungRotated;
+      var rungDir = new Vector2(cos, sin);
+
+      if (Mathf.IsZeroApprox(deg))
+      {
+        DrawLine(worldCenter - rungDir * (LadderHalfWidth * 1.5f), worldCenter + rungDir * (LadderHalfWidth * 1.5f), ColMain, 2f);
+        continue;
+      }
 
       // half-width direction (along the rung, bank-rotated)
-      var rungDir  = new Vector2(cos, sin);
       var rungPerp = new Vector2(-sin, cos); // perpendicular = up direction rotated
 
       bool aboveHorizon = deg > 0;
