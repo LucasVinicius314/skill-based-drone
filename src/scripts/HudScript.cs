@@ -32,11 +32,31 @@ public partial class HudScript : Control
   Label _hdgLabel;
   Label _bankLabel;
   Label _vsLabel;
+  Label _fpsLabel;
+  Label _timerLabel;
+  double _elapsed;
 
   public override void _Ready()
   {
     // fill parent
     SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+
+    // --- top-left panel: FPS + timer ---
+    var topPanel = new PanelContainer();
+    topPanel.SetAnchorsAndOffsetsPreset(LayoutPreset.TopLeft);
+    topPanel.Position = new Vector2(16, 16);
+    var topStyle = new StyleBoxFlat { BgColor = new Color(0, 0, 0, 0.45f), CornerRadiusTopLeft = 4, CornerRadiusTopRight = 4, CornerRadiusBottomLeft = 4, CornerRadiusBottomRight = 4 };
+    topPanel.AddThemeStyleboxOverride("panel", topStyle);
+    AddChild(topPanel);
+
+    var topVbox = new VBoxContainer();
+    topVbox.AddThemeConstantOverride("separation", 2);
+    topPanel.AddChild(topVbox);
+
+    _fpsLabel = MakeLabel("FPS  ---");
+    _timerLabel = MakeLabel("TIME 00:00");
+    topVbox.AddChild(_fpsLabel);
+    topVbox.AddChild(_timerLabel);
 
     // --- text readout panel (bottom-left) ---
     var panel = new PanelContainer();
@@ -74,6 +94,12 @@ public partial class HudScript : Control
 
   public override void _Process(double delta)
   {
+    _elapsed += delta;
+    var minutes = (int)(_elapsed / 60);
+    var seconds = (int)(_elapsed % 60);
+    _fpsLabel.Text = $"FPS  {Engine.GetFramesPerSecond()}";
+    _timerLabel.Text = $"TIME {minutes:D2}:{seconds:D2}";
+
     // update text labels
     _speedLabel.Text = $"SPD  {SpeedTotal:F0} m/s";
     _vsLabel.Text    = $"V/S  {(SpeedVertical >= 0 ? "+" : "")}{SpeedVertical:F1} m/s";
