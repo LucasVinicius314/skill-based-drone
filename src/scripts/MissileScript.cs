@@ -8,6 +8,7 @@ public partial class MissileScript : Node3D
   [Export] int splashDamage = 3;
   [Export] float seekerRange = 30f;
   [Export] float turnRate = 3.5f;
+  [Export] float maxTurnRate = 6f;
   [Export] float armingDistance = 4f;
 
   readonly PackedScene _explosionPrefab = GD.Load<PackedScene>("res://prefabs/explosion_missile.tscn");
@@ -21,6 +22,7 @@ public partial class MissileScript : Node3D
   float _distanceTravelled;
   Vector3 _velocity;
   Node3D _lockTarget;
+  Node3D _forcedLockTarget;
   bool _forcedTarget;
 
   public bool IsHomingOnPlayer(PlayerScript player) =>
@@ -38,6 +40,7 @@ public partial class MissileScript : Node3D
     LookAt(origin + forward, Vector3.Up);
     _velocity = forward * speed;
     _lockTarget = forcedTarget;
+    _forcedLockTarget = forcedTarget;
     _forcedTarget = forcedTarget != null;
     BuildMesh();
 
@@ -46,7 +49,7 @@ public partial class MissileScript : Node3D
       Stream = GD.Load<AudioStream>("res://sounds/521377__jarusca__rocket-launch.mp3"),
       MaxDistance = 500f,
       Autoplay = true,
-      VolumeDb = -10,
+      VolumeDb = -15,
     };
     AddChild(audio);
     audio.Finished += audio.QueueFree;
@@ -78,6 +81,16 @@ public partial class MissileScript : Node3D
   }
 
 
+  // seeker cone: only acquire targets within this half-angle (degrees) of forward
+  const float SeekerHalfAngle = 45f;
+
+  bool InSeekerCone(Node3D target)
+  {
+    var toTarget = (target.GlobalPosition - GlobalPosition).Normalized();
+    var forward = -GlobalTransform.Basis.Z;
+    return forward.Dot(toTarget) >= Mathf.Cos(Mathf.DegToRad(SeekerHalfAngle));
+  }
+
   void TryAcquireLock()
   {
     var best = float.MaxValue;
@@ -85,7 +98,7 @@ public partial class MissileScript : Node3D
 
     foreach (var node in GetTree().GetNodesInGroup("targets"))
     {
-      if (node is Node3D t)
+      if (node is Node3D t && InSeekerCone(t))
       {
         var dist = GlobalPosition.DistanceTo(t.GlobalPosition);
         if (dist < seekerRange && dist < best)
@@ -98,7 +111,7 @@ public partial class MissileScript : Node3D
 
     foreach (var node in GetTree().GetNodesInGroup("worm_segments"))
     {
-      if (node is WormSegmentScript w)
+      if (node is WormSegmentScript w && InSeekerCone(w))
       {
         var dist = GlobalPosition.DistanceTo(w.GlobalPosition);
         if (dist < seekerRange && dist < best)
@@ -121,17 +134,37 @@ public partial class MissileScript : Node3D
       return;
     }
 
-    if (!_forcedTarget && (_lockTarget == null || !IsInstanceValid(_lockTarget)))
+    if (_lockTarget == null || !IsInstanceValid(_lockTarget))
     {
-      TryAcquireLock();
+      if (_forcedTarget && IsInstanceValid(_forcedLockTarget))
+      {
+        if (InSeekerCone(_forcedLockTarget))
+        {
+          _lockTarget = _forcedLockTarget;
+        }
+      }
+      else if (!_forcedTarget)
+      {
+        TryAcquireLock();
+      }
     }
 
     if (_lockTarget != null && IsInstanceValid(_lockTarget))
     {
-      var toTarget = (_lockTarget.GlobalPosition - GlobalPosition).Normalized();
-      var desired = toTarget * speed;
-      _velocity = _velocity.Lerp(desired, turnRate * (float)delta);
-      _velocity = _velocity.Normalized() * speed;
+      if (!InSeekerCone(_lockTarget))
+      {
+        _lockTarget = null;
+      }
+      else
+      {
+        var toTarget = _lockTarget.GlobalPosition - GlobalPosition;
+        var dist = toTarget.Length();
+        var losDir = toTarget / dist;
+        var closingFactor = Mathf.Clamp(1f + (20f / Mathf.Max(dist, 1f)), 1f, 5f);
+        var effectiveTurnRate = Mathf.Min(turnRate * closingFactor, maxTurnRate);
+        _velocity = _velocity.Lerp(losDir * speed, effectiveTurnRate * (float)delta);
+        _velocity = _velocity.Normalized() * speed;
+      }
     }
 
     var move = _velocity * (float)delta;
