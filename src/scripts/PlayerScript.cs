@@ -37,8 +37,11 @@ public partial class PlayerScript : RigidBody3D
   AudioStreamPlayer _lockOnAudio;
   AudioStreamGeneratorPlayback _lockOnPlayback;
   float _missileTimer;
+  float _flareTimer;
   float _lockOnBeepTimer;
   float _lockOnPhase;
+
+  [Export] float flareRate = 0.4f;
 
   public override void _Ready()
   {
@@ -189,6 +192,15 @@ public partial class PlayerScript : RigidBody3D
       var missile = _missilePrefab.Instantiate<MissileScript>();
       GetTree().CurrentScene.AddChild(missile);
       missile.Launch(_missileBarrel.GlobalPosition, -_missileBarrel.GlobalTransform.Basis.Z);
+    }
+
+    _flareTimer -= (float)delta;
+    if (Input.IsActionPressed("flare") && _flareTimer <= 0f)
+    {
+      _flareTimer = flareRate;
+      var flare = new FlareScript();
+      GetTree().CurrentScene.AddChild(flare);
+      flare.Launch(GlobalPosition, LinearVelocity);
     }
 
     UpdateHud();

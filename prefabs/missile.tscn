@@ -4,6 +4,6 @@
 
 [node name="Missile" type="Node3D" unique_id=847969861]
 script = ExtResource("1_missile")
-speed = 91.16
+speed = 100.0
 lifetime = 13.91
 splashRadius = 5.13

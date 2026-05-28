@@ -91,6 +91,23 @@ public partial class MissileScript : Node3D
     return forward.Dot(toTarget) >= Mathf.Cos(Mathf.DegToRad(SeekerHalfAngle));
   }
 
+  // if a flare is within seeker range and cone, it overrides the current target
+  void TrySeduceByFlare()
+  {
+    foreach (var node in GetTree().GetNodesInGroup("flares"))
+    {
+      if (node is FlareScript flare && IsInstanceValid(flare) && InSeekerCone(flare))
+      {
+        var dist = GlobalPosition.DistanceTo(flare.GlobalPosition);
+        if (dist < seekerRange)
+        {
+          _lockTarget = flare;
+          return;
+        }
+      }
+    }
+  }
+
   void TryAcquireLock()
   {
     var best = float.MaxValue;
@@ -133,6 +150,8 @@ public partial class MissileScript : Node3D
       QueueFree();
       return;
     }
+
+    TrySeduceByFlare();
 
     if (_lockTarget == null || !IsInstanceValid(_lockTarget))
     {
