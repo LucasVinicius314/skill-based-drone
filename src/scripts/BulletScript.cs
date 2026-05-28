@@ -2,16 +2,16 @@ using Godot;
 using System.Collections.Generic;
 using System.Linq;
 
-public partial class BulletScript : Node3D
+public partial class BulletScript : Node3D, ILaunchable
 {
   public enum Faction { Player, Enemy }
 
-  [Export] float speed = 80f;
   [Export] float lifetime = 3f;
 
   float _elapsed;
   Vector3 _velocity;
   Faction _owner;
+  int _damage = 1;
 
   public Faction GetFactionType() => _owner;
 
@@ -23,11 +23,14 @@ public partial class BulletScript : Node3D
   ImmediateMesh _immediateMesh;
   StandardMaterial3D _trailMaterial;
 
-  public void Launch(Vector3 origin, Vector3 forward, Faction owner = Faction.Player)
+  void ILaunchable.Launch(Vector3 origin, Vector3 forward, float speed) => Launch(origin, forward, speed: speed);
+
+  public void Launch(Vector3 origin, Vector3 forward, Faction owner = Faction.Player, int damage = 1, float speed = 900f)
   {
     GlobalPosition = origin;
     _velocity = forward * speed;
     _owner = owner;
+    _damage = damage;
 
     _trailMaterial = new StandardMaterial3D
     {
@@ -83,13 +86,13 @@ public partial class BulletScript : Node3D
         var target = collider.GetParentOrNull<TargetScript>() ?? collider as TargetScript;
         var worm = collider.GetParentOrNull<WormSegmentScript>() ?? collider as WormSegmentScript;
         var tank = collider.GetParentOrNull<TankScript>() ?? collider as TankScript;
-        target?.TakeDamage(1, hitPos);
-        worm?.TakeDamage(1);
-        tank?.TakeDamage(1, hitPos);
+        target?.TakeDamage(_damage, hitPos);
+        worm?.TakeDamage(_damage);
+        tank?.TakeDamage(_damage, hitPos);
       }
       else
       {
-        (collider as PlayerScript ?? collider.GetParentOrNull<PlayerScript>())?.TakeDamage(1);
+        (collider as PlayerScript ?? collider.GetParentOrNull<PlayerScript>())?.TakeDamage(_damage);
       }
       var impact = _impactPrefab.Instantiate<BulletImpactScript>();
       GetTree().CurrentScene.AddChild(impact);

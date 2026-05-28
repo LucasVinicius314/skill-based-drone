@@ -1,20 +1,20 @@
-[gd_scene format=3 uid="uid://wormseg001"]
+[gd_scene format=3 uid="uid://cs3ogjqojdn76"]
 
-[ext_resource type="Script" path="res://src/scripts/WormSegmentScript.cs" id="1_wormseg"]
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_seg"]
-size = Vector3(3.5, 2.0, 3.5)
+[ext_resource type="Script" uid="uid://bxmjbh0m6bdj0" path="res://src/scripts/WormSegmentScript.cs" id="1_wormseg"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_seg"]
-size = Vector3(3.5, 2.0, 3.5)
+size = Vector3(3.5, 2, 3.5)
 
-[node name="WormSegment" type="Node3D"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_seg"]
+size = Vector3(3.5, 2, 3.5)
+
+[node name="WormSegment" type="Node3D" unique_id=749690114]
 script = ExtResource("1_wormseg")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=2146263608]
 mesh = SubResource("BoxMesh_seg")
 
-[node name="Area3D" type="Area3D" parent="."]
+[node name="Area3D" type="Area3D" parent="." unique_id=1447007149]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D" unique_id=49364630]
 shape = SubResource("BoxShape3D_seg")

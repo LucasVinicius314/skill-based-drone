@@ -1,0 +1,31 @@
+[gd_scene format=3 uid="uid://c2rck6riptj4r"]
+
+[ext_resource type="Script" uid="uid://bc161i0gq12bd" path="res://src/scripts/WeaponScript.cs" id="1_weapon50"]
+[ext_resource type="PackedScene" uid="uid://dhnoaqgqurrxy" path="res://prefabs/bullet.tscn" id="2_bullet"]
+[ext_resource type="AudioStream" uid="uid://b1x57qghrjum7" path="res://sounds/653191__sebastianvdb__close-gun-shots-trim.mp3" id="3_sound"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_87n8l"]
+size = Vector3(0.025, 0.025, 0.34)
+
+[sub_resource type="BoxMesh" id="BoxMesh_cc6f5"]
+size = Vector3(0.035, 0.035, 0.02)
+
+[node name="Weapon50Cal" type="Node3D" unique_id=1354475334]
+script = ExtResource("1_weapon50")
+damage = 3
+projectilePrefab = ExtResource("2_bullet")
+shootSound = ExtResource("3_sound")
+shootVolumeDb = -37.12
+
+[node name="Barrel" type="Marker3D" parent="." unique_id=1870967068]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.36853075)
+
+[node name="Model" type="Node3D" parent="." unique_id=2046366082]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Model" unique_id=1844854706]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.9802322e-08, 0.001686871, -0.17335449)
+mesh = SubResource("BoxMesh_87n8l")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="Model" unique_id=1634755248]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.9802322e-08, 0.001686871, -0.33484906)
+mesh = SubResource("BoxMesh_cc6f5")

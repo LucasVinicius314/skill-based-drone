@@ -2,6 +2,8 @@
 
 [ext_resource type="Script" uid="uid://cfxaoqoik7fa3" path="res://src/scripts/PlayerScript.cs" id="1_72ieh"]
 [ext_resource type="Texture2D" uid="uid://cx5g2crwr6koo" path="res://skyboxes/industrial_sunset_puresky_4k.exr" id="2_4dohe"]
+[ext_resource type="PackedScene" uid="uid://c2rck6riptj4r" path="res://prefabs/weapon_50cal.tscn" id="2_50cal"]
+[ext_resource type="PackedScene" uid="uid://bssr2y67ws3qs" path="res://prefabs/weapon_missile_launcher.tscn" id="3_missile"]
 [ext_resource type="Shader" uid="uid://di1wbtolu4tfr" path="res://shaders/invert.gdshader" id="3_r66lb"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_fp3wc"]
@@ -27,11 +29,8 @@ sky = SubResource("Sky_1txc5")
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_1txc5"]
 shader = ExtResource("3_r66lb")
 
-[sub_resource type="BoxMesh" id="BoxMesh_4dohe"]
-size = Vector3(0.025, 0.025, 0.395)
-
-[sub_resource type="BoxMesh" id="BoxMesh_r66lb"]
-size = Vector3(0.04, 0.085, 0.395)
+[sub_resource type="BoxMesh" id="BoxMesh_ht1c8"]
+size = Vector3(0.55, 0.465, 0.125)
 
 [node name="Player" type="RigidBody3D" unique_id=1035182302]
 physics_interpolation_mode = 1
@@ -42,8 +41,6 @@ throttleForce = 57.44
 yawTorque = 0.405
 pitchTorque = 7.94
 rollTorque = 7.89
-fireRate = 0.1
-missileFireRate = 0.475
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1404248078]
 shape = SubResource("BoxShape3D_fp3wc")
@@ -125,25 +122,22 @@ offset_bottom = 2.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Barrel" type="MeshInstance3D" parent="Mount" unique_id=1702927389]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.19587857, 0.07134849)
-mesh = SubResource("BoxMesh_4dohe")
+[node name="Weapon50Cal" parent="Mount" unique_id=828247631 instance=ExtResource("2_50cal")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.20303273, 0.1756603)
 
-[node name="MissileLauncher" type="Node3D" parent="Mount" unique_id=723485964]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.20292075, -0.1683172, 0.057201505)
+[node name="WeaponMissileLauncher" parent="Mount" unique_id=1901349118 instance=ExtResource("3_missile")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2183025, -0.18383104, 0.15154208)
 
-[node name="Barrel" type="MeshInstance3D" parent="Mount/MissileLauncher" unique_id=122172497]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.03703764, -0.0071005225, 0.0024130344)
-mesh = SubResource("BoxMesh_r66lb")
+[node name="Model" type="Node3D" parent="Mount" unique_id=1196379245]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.021497011, 0.08982143)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Mount/Model" unique_id=1802361883]
+mesh = SubResource("BoxMesh_ht1c8")
 
 [node name="BladesAudio" type="AudioStreamPlayer3D" parent="." unique_id=800000001]
 volume_db = -44.272
 autoplay = true
 max_distance = 80.0
-
-[node name="ShootAudio" type="AudioStreamPlayer3D" parent="." unique_id=800000002]
-volume_db = -34.727
-max_distance = 60.0
 
 [node name="HitmarkerAudio" type="AudioStreamPlayer" parent="." unique_id=800000003]
 volume_db = -35.863

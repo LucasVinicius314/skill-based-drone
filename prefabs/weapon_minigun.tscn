@@ -1,0 +1,39 @@
+[gd_scene format=3 uid="uid://d1uqa21m8m2b6"]
+
+[ext_resource type="Script" uid="uid://bc161i0gq12bd" path="res://src/scripts/WeaponScript.cs" id="1_minigun"]
+[ext_resource type="PackedScene" uid="uid://dhnoaqgqurrxy" path="res://prefabs/bullet.tscn" id="2_bullet"]
+[ext_resource type="AudioStream" uid="uid://b1x57qghrjum7" path="res://sounds/653191__sebastianvdb__close-gun-shots-trim.mp3" id="3_sound"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_yrc81"]
+top_radius = 0.048
+bottom_radius = 0.048
+height = 0.29
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_abah8"]
+top_radius = 0.053
+bottom_radius = 0.053
+height = 0.01
+
+[node name="WeaponMinigun" type="Node3D" unique_id=1327055697]
+script = ExtResource("1_minigun")
+fireRate = 0.05
+projectileSpeed = 900.0
+projectilePrefab = ExtResource("2_bullet")
+shootSound = ExtResource("3_sound")
+
+[node name="Barrel" type="Marker3D" parent="." unique_id=1888473914]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.31630242)
+
+[node name="Model" type="Node3D" parent="." unique_id=1991679719]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Model" unique_id=274095838]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 2.9802322e-08, -0.02587894, -0.15023082)
+mesh = SubResource("CylinderMesh_yrc81")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="Model" unique_id=1454509034]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 2.9802322e-08, -0.02587894, -0.26946706)
+mesh = SubResource("CylinderMesh_abah8")
+
+[node name="MeshInstance3D3" type="MeshInstance3D" parent="Model" unique_id=121362901]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 2.9802322e-08, -0.02587894, -0.21621607)
+mesh = SubResource("CylinderMesh_abah8")

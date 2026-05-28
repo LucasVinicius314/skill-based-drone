@@ -1,0 +1,32 @@
+[gd_scene format=3 uid="uid://bssr2y67ws3qs"]
+
+[ext_resource type="Script" uid="uid://bc161i0gq12bd" path="res://src/scripts/WeaponScript.cs" id="1_missilelauncher"]
+[ext_resource type="PackedScene" uid="uid://c3ujqsh2sxi8a" path="res://prefabs/missile.tscn" id="2_missile"]
+[ext_resource type="AudioStream" uid="uid://8ctega87t701" path="res://sounds/521377__jarusca__rocket-launch.mp3" id="3_sound"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_biyyd"]
+size = Vector3(0.06, 0.105, 0.34)
+
+[sub_resource type="BoxMesh" id="BoxMesh_iogay"]
+size = Vector3(0.07, 0.11, 0.02)
+
+[node name="WeaponMissileLauncher" type="Node3D" unique_id=2134396261]
+script = ExtResource("1_missilelauncher")
+fireRate = 1.2
+projectileSpeed = 100.0
+projectilePrefab = ExtResource("2_missile")
+shootSound = ExtResource("3_sound")
+shootVolumeDb = -40.475
+
+[node name="Barrel" type="Marker3D" parent="." unique_id=856032034]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.010546884, -0.36489183)
+
+[node name="Model" type="Node3D" parent="." unique_id=1848327583]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Model" unique_id=1571562708]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.9802322e-08, 0.001686871, -0.17335449)
+mesh = SubResource("BoxMesh_biyyd")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="Model" unique_id=241604783]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.9802322e-08, 0.001686871, -0.33484906)
+mesh = SubResource("BoxMesh_iogay")

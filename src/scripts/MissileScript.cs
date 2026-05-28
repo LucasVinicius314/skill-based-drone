@@ -1,8 +1,8 @@
 using Godot;
 
-public partial class MissileScript : Node3D
+public partial class MissileScript : Node3D, ILaunchable
 {
-  [Export] float speed = 25f;
+  float speed;
   [Export] float lifetime = 6f;
   [Export] float splashRadius = 5f;
   [Export] int splashDamage = 3;
@@ -34,8 +34,11 @@ public partial class MissileScript : Node3D
     AddToGroup("missiles");
   }
 
-  public void Launch(Vector3 origin, Vector3 forward, Node3D forcedTarget = null)
+  void ILaunchable.Launch(Vector3 origin, Vector3 forward, float speed) => Launch(origin, forward, speed: speed);
+
+  public void Launch(Vector3 origin, Vector3 forward, Node3D forcedTarget = null, float speed = 100f)
   {
+    this.speed = speed;
     GlobalPosition = origin;
     LookAt(origin + forward, Vector3.Up);
     _velocity = forward * speed;
