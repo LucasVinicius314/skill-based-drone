@@ -5,27 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://c2rck6riptj4r" path="res://prefabs/weapon_50cal.tscn" id="2_50cal"]
 [ext_resource type="PackedScene" uid="uid://bssr2y67ws3qs" path="res://prefabs/weapon_missile_launcher.tscn" id="3_missile"]
 [ext_resource type="Shader" uid="uid://di1wbtolu4tfr" path="res://shaders/invert.gdshader" id="3_r66lb"]
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_fp3wc"]
-size = Vector3(0.795, 0.37, 0.895)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_72ieh"]
-albedo_color = Color(0.79607844, 0.60784316, 0.43137255, 1)
-
-[sub_resource type="BoxMesh" id="BoxMesh_fp3wc"]
-material = SubResource("StandardMaterial3D_72ieh")
-size = Vector3(0.795, 0.37, 0.895)
-
-[sub_resource type="BoxMesh" id="BoxMesh_g2jcq"]
-material = SubResource("StandardMaterial3D_72ieh")
-size = Vector3(0.09, 0.58, 0.3)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_u51tk"]
-albedo_color = Color(0.34901962, 0.7411765, 0.7764706, 1)
-
-[sub_resource type="BoxMesh" id="BoxMesh_kbsxf"]
-material = SubResource("StandardMaterial3D_u51tk")
-size = Vector3(0.405, 0.215, 0.3)
+[ext_resource type="PackedScene" uid="uid://cftbtma232l43" path="res://prefabs/ac1000_model.tscn" id="6_g2jcq"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_r66lb"]
 panorama = ExtResource("2_4dohe")
@@ -43,6 +23,9 @@ shader = ExtResource("3_r66lb")
 [sub_resource type="BoxMesh" id="BoxMesh_ht1c8"]
 size = Vector3(0.55, 0.465, 0.125)
 
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_g2jcq"]
+points = PackedVector3Array(2.081023, 0.027861059, -1.5227985, 2.081023, -0.028055996, -1.5227985, 1.0904286, 0.94131076, -3.5088444, 1.0904286, 0.94131076, -2.6665082, 1.4632769, 0.31752512, 2.6902547, 1.8104534, 0.022200316, 2.1486058, 1.4632769, -0.31772006, -0.7099819, 1.3422539, -0.321724, -1.5042632, 1.0904286, 0.5654931, -3.1498046, 1.8104534, -0.022395253, 2.1486058, 1.4632769, -0.31772006, 2.6902547, -1.0908356, 0.94131076, -3.5088444, -1.0908356, 0.94131076, -2.6665082, 0.2526405, 0.46912244, 3.121377, 0.4123745, 0.46912244, 2.9827037, 0.2526405, 0.19243667, 3.5044441, 1.4791687, 0.21273246, 2.7939162, 1.5667777, 0.19754514, 2.6916275, 0.82760096, -0.42127013, -1.5042632, -1.0908356, 0.5654931, -3.1498046, 1.5667777, -0.19774005, 2.6916275, 1.4791687, -0.21292737, 2.7939162, 0.2526405, -0.1924935, 3.5044441, 0.2526405, -0.4691793, 3.121377, 0.4123745, -0.4691793, 2.9827037, 0.82760096, -0.42127013, 2.6902547, -2.0814302, -0.028055996, -1.5227985, -2.0814302, 0.027861059, -1.5227985, -1.4636838, 0.31752512, 2.6902547, -0.41278148, 0.46912244, 2.9827037, -0.2530476, 0.46912244, 3.121377, -0.2530476, 0.19243667, 3.5044441, 0.4123745, -0.4691793, -1.4088395, -0.8280082, -0.42127013, -1.5042632, -1.3426609, -0.321724, -1.5042632, -0.2530476, -0.1924935, 3.5044441, -0.2530476, -0.4691793, 3.121377, -1.4636838, -0.31772006, -0.7099819, -1.4636838, -0.31772006, 2.6902547, -1.8108605, -0.022395253, 2.1486058, -1.8108605, 0.022200316, 2.1486058, -1.5675924, 0.19754514, 2.6916275, -1.4795756, 0.21273246, 2.7939162, -0.41278148, -0.4691793, -1.4088395, -0.8280082, -0.42127013, 2.6902547, -1.4795756, -0.21292737, 2.7939162, -0.41278148, -0.4691793, 2.9827037, -1.5675924, -0.19774005, 2.6916275)
+
 [node name="Player" type="RigidBody3D" unique_id=1035182302]
 physics_interpolation_mode = 1
 continuous_cd = true
@@ -50,25 +33,11 @@ angular_damp = 2.0
 script = ExtResource("1_72ieh")
 throttleForce = 57.44
 yawTorque = 0.405
-pitchTorque = 7.94
+pitchTorque = 15.88
 rollTorque = 7.89
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1404248078]
-shape = SubResource("BoxShape3D_fp3wc")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=201126372]
-mesh = SubResource("BoxMesh_fp3wc")
-
-[node name="MeshInstance3D3" type="MeshInstance3D" parent="." unique_id=1226053616]
-transform = Transform3D(1, 0, 0, 0, 0.7973944, -0.6034586, 0, 0.6034586, 0.7973944, 0, 0.046465397, 0.14808726)
-mesh = SubResource("BoxMesh_g2jcq")
-
-[node name="MeshInstance3D2" type="MeshInstance3D" parent="." unique_id=1366010678]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.06862831, -0.39436167)
-mesh = SubResource("BoxMesh_kbsxf")
-
 [node name="Mount" type="Node3D" parent="." unique_id=546730480]
-transform = Transform3D(1, 0, 0, 0, 0.9396926, -0.34202012, 0, 0.34202012, 0.9396926, 0, -0.21523573, -0.47982562)
+transform = Transform3D(1, 0, 0, 0, 0.9396926, -0.34202012, 0, 0.34202012, 0.9396926, 0, -0.3786693, -2.7888398)
 
 [node name="Camera3D" type="Camera3D" parent="Mount" unique_id=181144900]
 environment = SubResource("Environment_ht1c8")
@@ -154,12 +123,20 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.021497011, 0.08982143)
 mesh = SubResource("BoxMesh_ht1c8")
 
 [node name="BladesAudio" type="AudioStreamPlayer3D" parent="." unique_id=800000001]
-volume_db = -44.272
+volume_db = -67.826
+unit_size = 348.45
 autoplay = true
-max_distance = 80.0
+max_distance = 1200.0
 
 [node name="HitmarkerAudio" type="AudioStreamPlayer" parent="." unique_id=800000003]
 volume_db = -35.863
 
 [node name="MetalImpactAudio" type="AudioStreamPlayer" parent="." unique_id=800000004]
 volume_db = -24.233
+
+[node name="Ac1000Model" parent="." unique_id=726197229 instance=ExtResource("6_g2jcq")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.7191038)
+
+[node name="PhysicsCollider" type="CollisionShape3D" parent="." unique_id=1612338461]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 0, 0.7191038)
+shape = SubResource("ConvexPolygonShape3D_g2jcq")

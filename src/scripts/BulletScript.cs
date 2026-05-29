@@ -67,6 +67,7 @@ public partial class BulletScript : Node3D, ILaunchable
       return;
     }
 
+    _velocity.Y -= 9.8f * (float)delta;
     var move = _velocity * (float)delta;
     var query = new PhysicsRayQueryParameters3D
     {

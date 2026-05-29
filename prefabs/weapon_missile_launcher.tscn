@@ -12,7 +12,7 @@ size = Vector3(0.07, 0.11, 0.02)
 
 [node name="WeaponMissileLauncher" type="Node3D" unique_id=2134396261]
 script = ExtResource("1_missilelauncher")
-fireRate = 1.2
+fireRate = 0.1
 projectileSpeed = 100.0
 projectilePrefab = ExtResource("2_missile")
 shootSound = ExtResource("3_sound")

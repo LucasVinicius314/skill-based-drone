@@ -19,6 +19,8 @@ public partial class PlayerScript : RigidBody3D
   [Export] float hitSpinForce = 8f;
   [Export] int maxHealth = 10;
 
+  float globalRotationScale = 12f;
+
   float _targetFov;
   float _pitchInput;
   float _rollInput;
@@ -39,6 +41,7 @@ public partial class PlayerScript : RigidBody3D
   CanvasLayer _canvasLayer;
   Label _healthLabel;
   HudScript _hud;
+  PauseMenuScript _pauseMenu;
   AudioStreamPlayer3D _bladesAudio;
   AudioStreamPlayer _hitmarkerAudio;
   AudioStreamPlayer _metalImpactAudio;
@@ -83,6 +86,8 @@ public partial class PlayerScript : RigidBody3D
     _canvasLayer = GetNode<CanvasLayer>("Mount/Camera3D/CanvasLayer");
     _hud = new HudScript();
     _canvasLayer.AddChild(_hud);
+    _pauseMenu = new PauseMenuScript();
+    _canvasLayer.AddChild(_pauseMenu);
 
     var gen = new AudioStreamGenerator { MixRate = 44100f, BufferLength = 0.1f };
     _lockOnAudio = new AudioStreamPlayer { Stream = gen, VolumeDb = -20f };
@@ -139,22 +144,27 @@ public partial class PlayerScript : RigidBody3D
 
     if (@event is InputEventKey key && key.Pressed && !key.Echo)
     {
-      if (key.Keycode == Key.Escape)
+      HandleKeyInput(key.Keycode);
+    }
+  }
+
+  void HandleKeyInput(Key keycode)
+  {
+    if (keycode == Key.Escape && !GetTree().Paused)
+    {
+      _pauseMenu.Toggle();
+    }
+    else if (keycode == Key.R)
+    {
+      GetTree().ReloadCurrentScene();
+    }
+    else if (keycode == Key.V)
+    {
+      _thirdPerson = !_thirdPerson;
+      if (!_thirdPerson)
       {
-        Input.MouseMode = Input.MouseModeEnum.Visible;
-      }
-      else if (key.Keycode == Key.R)
-      {
-        GetTree().ReloadCurrentScene();
-      }
-      else if (key.Keycode == Key.V)
-      {
-        _thirdPerson = !_thirdPerson;
-        if (!_thirdPerson)
-        {
-          _mount.Transform = _mountLocalTransform;
-          _camera.Transform = _fpvLocalTransform;
-        }
+        _mount.Transform = _mountLocalTransform;
+        _camera.Transform = _fpvLocalTransform;
       }
     }
   }
@@ -168,13 +178,13 @@ public partial class PlayerScript : RigidBody3D
 
     var fovScale = Mathf.Lerp(0.15f, 1f, (_camera.Fov - fovMin) / (fovMax - fovMin));
 
-    ApplyTorque(GlobalTransform.Basis.Y * yaw * yawTorque * fovScale);
+    ApplyTorque(GlobalTransform.Basis.Y * yaw * yawTorque * fovScale * globalRotationScale);
 
     var rollAxis = -Input.GetAxis("roll_up", "roll_down") * .1f;
-    ApplyTorque(-GlobalTransform.Basis.Z * (_rollInput * mouseSensitivity + rollAxis) * rollTorque * fovScale);
+    ApplyTorque(-GlobalTransform.Basis.Z * (_rollInput * mouseSensitivity + rollAxis) * rollTorque * fovScale * globalRotationScale);
 
     var pitchAxis = Input.GetAxis("pitch_up", "pitch_down") * .1f;
-    ApplyTorque(GlobalTransform.Basis.X * (_pitchInput * mouseSensitivity + pitchAxis) * pitchTorque * fovScale);
+    ApplyTorque(GlobalTransform.Basis.X * (_pitchInput * mouseSensitivity + pitchAxis) * pitchTorque * fovScale * globalRotationScale);
 
     _rollInput = 0f;
     _pitchInput = 0f;
@@ -218,7 +228,7 @@ public partial class PlayerScript : RigidBody3D
 
     // Place the camera 4 units behind and 1.5 units above in Mount-local space
     // (which is now aligned with the Player/RigidBody3D axes).
-    _camera.Transform = new Transform3D(Basis.Identity, new Vector3(0, 1.5f, 4f));
+    _camera.Transform = new Transform3D(Basis.Identity, new Vector3(0, 3f, 10f));
   }
 
   void UpdateLockOnAlarm(float delta)
