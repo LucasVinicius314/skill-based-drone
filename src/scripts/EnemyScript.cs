@@ -6,8 +6,7 @@ public partial class EnemyScript : Node3D
   [Export] public float explosionRadius = 3f;
 
   protected int _health;
-  protected Node3D _healthBar;
-  protected MeshInstance3D _healthBarFill;
+  protected HealthBarScript _healthBar;
   protected PlayerScript _player;
   protected Camera3D _camera;
   protected CanvasLayer _canvasLayer;
@@ -20,10 +19,10 @@ public partial class EnemyScript : Node3D
     _player = GetTree().CurrentScene.GetNode<PlayerScript>("Player");
     _camera = _player.GetNode<Camera3D>("Mount/Camera3D");
     _canvasLayer = _player.GetNode<CanvasLayer>("Mount/Camera3D/CanvasLayer");
-    _healthBar = GetNodeOrNull<Node3D>("HealthBar");
-    _healthBarFill = GetNodeOrNull<MeshInstance3D>("HealthBar/Fill");
+    _healthBar = GetNodeOrNull<HealthBarScript>("HealthBar");
     OnReady();
     _health = maxHealth;
+    _healthBar?.Init(maxHealth);
   }
 
   protected virtual void OnReady() { }
@@ -32,7 +31,7 @@ public partial class EnemyScript : Node3D
   {
     _health -= amount;
     _player?.PlayHitmarker();
-    UpdateHealthBar();
+    _healthBar?.SetRatio((float)_health / maxHealth);
 
     var dmg = _damageNumberPrefab.Instantiate<DamageNumberScript>();
     GetTree().CurrentScene.AddChild(dmg);
@@ -43,16 +42,6 @@ public partial class EnemyScript : Node3D
       SpawnExplosion(GlobalPosition);
       QueueFree();
     }
-  }
-
-  protected void UpdateHealthBar()
-  {
-    if (_healthBarFill == null) return;
-    var ratio = (float)_health / maxHealth;
-    var t = _healthBarFill.Transform;
-    t.Origin = new Vector3((ratio - 1f) * 0.5f, 0, 0);
-    _healthBarFill.Transform = t;
-    _healthBarFill.Scale = new Vector3(ratio, 1, 1);
   }
 
   protected void SpawnExplosion(Vector3 position)

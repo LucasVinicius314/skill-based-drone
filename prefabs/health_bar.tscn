@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://health_bar_001"]
+
+[ext_resource type="Script" path="res://src/scripts/HealthBarScript.cs" id="1_healthbar"]
+
+[node name="HealthBar" type="Node3D"]
+script = ExtResource("1_healthbar")

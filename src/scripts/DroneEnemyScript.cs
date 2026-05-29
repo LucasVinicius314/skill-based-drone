@@ -22,7 +22,6 @@ public partial class DroneEnemyScript : EnemyScript
     if (_player == null) return;
 
     LookAt(_player.GlobalPosition, Vector3.Up);
-    _healthBar.LookAt(_camera.GlobalPosition, Vector3.Up);
 
     _fireTimer -= (float)delta;
     if (_fireTimer <= 0f)

@@ -41,8 +41,6 @@ public partial class TankScript : EnemyScript
       SnapToGround();
     }
 
-    _healthBar.LookAt(_camera.GlobalPosition, Vector3.Up);
-
     _fireTimer -= (float)delta;
     if (_fireTimer <= 0f && distToPlayer < detectionRange)
     {

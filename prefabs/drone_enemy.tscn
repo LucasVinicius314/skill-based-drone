@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://dviw40xdw4fw3"]
 
 [ext_resource type="Script" uid="uid://b2icr7vwwa3uj" path="res://src/scripts/DroneEnemyScript.cs" id="1_kjw8i"]
+[ext_resource type="PackedScene" path="res://prefabs/health_bar.tscn" id="2_healthbar"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_target"]
 albedo_color = Color(1, 0.1, 0.1, 1)
@@ -11,22 +12,6 @@ size = Vector3(4, 4, 0.5)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_target"]
 size = Vector3(4, 4, 0.5)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bg"]
-no_depth_test = true
-albedo_color = Color(0.2, 0.2, 0.2, 1)
-
-[sub_resource type="BoxMesh" id="BoxMesh_bg"]
-material = SubResource("StandardMaterial3D_bg")
-size = Vector3(4, 0.4, 0.01)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fill"]
-no_depth_test = true
-albedo_color = Color(0.1, 1, 0.1, 1)
-
-[sub_resource type="BoxMesh" id="BoxMesh_fill"]
-material = SubResource("StandardMaterial3D_fill")
-size = Vector3(4, 0.4, 0.01)
 
 [node name="DroneEnemy" type="Node3D" unique_id=379104609]
 script = ExtResource("1_kjw8i")
@@ -39,12 +24,5 @@ mesh = SubResource("BoxMesh_target")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D" unique_id=883147721]
 shape = SubResource("BoxShape3D_target")
 
-[node name="HealthBar" type="Node3D" parent="." unique_id=700000001]
+[node name="HealthBar" parent="." unique_id=381190125 instance=ExtResource("2_healthbar")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.6, 0)
-
-[node name="Background" type="MeshInstance3D" parent="HealthBar" unique_id=700000002]
-mesh = SubResource("BoxMesh_bg")
-
-[node name="Fill" type="MeshInstance3D" parent="HealthBar" unique_id=700000003]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.02)
-mesh = SubResource("BoxMesh_fill")
