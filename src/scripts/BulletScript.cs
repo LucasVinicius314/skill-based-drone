@@ -83,12 +83,8 @@ public partial class BulletScript : Node3D, ILaunchable
       if (_owner == Faction.Player)
       {
         var hitPos = result["position"].AsVector3();
-        var target = collider.GetParentOrNull<TargetScript>() ?? collider as TargetScript;
-        var worm = collider.GetParentOrNull<WormSegmentScript>() ?? collider as WormSegmentScript;
-        var tank = collider.GetParentOrNull<TankScript>() ?? collider as TankScript;
-        target?.TakeDamage(_damage, hitPos);
-        worm?.TakeDamage(_damage);
-        tank?.TakeDamage(_damage, hitPos);
+        var enemy = collider.GetParentOrNull<EnemyScript>() ?? collider as EnemyScript;
+        enemy?.TakeDamage(_damage, hitPos);
       }
       else
       {

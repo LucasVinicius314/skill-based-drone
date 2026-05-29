@@ -7,7 +7,7 @@ public partial class TargetSpawnerScript : Node3D
   [Export] int wormCount = 3;
   [Export] int tankCount = 5;
 
-  readonly PackedScene _targetPrefab = GD.Load<PackedScene>("res://prefabs/target.tscn");
+  readonly PackedScene _targetPrefab = GD.Load<PackedScene>("res://prefabs/drone_enemy.tscn");
   readonly PackedScene _wormPrefab = GD.Load<PackedScene>("res://prefabs/worm.tscn");
   readonly PackedScene _tankPrefab = GD.Load<PackedScene>("res://prefabs/tank.tscn");
 
@@ -36,7 +36,7 @@ public partial class TargetSpawnerScript : Node3D
 
   void SpawnTarget()
   {
-    var target = _targetPrefab.Instantiate<TargetScript>();
+    var target = _targetPrefab.Instantiate<DroneEnemyScript>();
     AddChild(target);
     target.GlobalPosition = RandomOnSphere() * radius;
   }

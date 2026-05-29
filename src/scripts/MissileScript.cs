@@ -257,21 +257,17 @@ public partial class MissileScript : Node3D, ILaunchable
 
     foreach (var target in GetTree().GetNodesInGroup("targets"))
     {
-      if (target is TargetScript t && t.GlobalPosition.DistanceTo(hitPos) <= splashRadius)
+      if (target is EnemyScript enemy && enemy.GlobalPosition.DistanceTo(hitPos) <= splashRadius)
       {
-        t.TakeDamage(splashDamage, hitPos);
-      }
-      else if (target is TankScript tank && tank.GlobalPosition.DistanceTo(hitPos) <= splashRadius)
-      {
-        tank.TakeDamage(splashDamage, hitPos);
+        enemy.TakeDamage(splashDamage, hitPos);
       }
     }
 
     foreach (var segment in GetTree().GetNodesInGroup("worm_segments"))
     {
-      if (segment is WormSegmentScript w && w.GlobalPosition.DistanceTo(hitPos) <= splashRadius)
+      if (segment is EnemyScript w && w.GlobalPosition.DistanceTo(hitPos) <= splashRadius)
       {
-        w.TakeDamage(splashDamage);
+        w.TakeDamage(splashDamage, hitPos);
       }
     }
   }

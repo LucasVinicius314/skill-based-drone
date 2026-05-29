@@ -1,40 +1,23 @@
 using Godot;
 
-public partial class WormSegmentScript : Node3D
+public partial class WormSegmentScript : EnemyScript
 {
-  [Export] public int MaxHealth = 2;
-
-  public int Health;
   public WormScript Worm;
 
-  PlayerScript _player;
-  readonly PackedScene _explosionPrefab = GD.Load<PackedScene>("res://prefabs/explosion_enemy.tscn");
-
-  public override void _Ready()
+  protected override void OnReady()
   {
-    Health = MaxHealth;
+    maxHealth = 2;
+    explosionRadius = 2f;
     AddToGroup("worm_segments");
-    _player = GetTree().CurrentScene.GetNode<PlayerScript>("Player");
   }
 
-  public void TakeDamage(int amount)
+  public override void TakeDamage(int amount, Vector3 hitPosition)
   {
-    _player?.PlayHitmarker();
-    Health -= amount;
-    if (Health <= 0)
+    if (_health - amount <= 0)
     {
-      SpawnExplosion(GlobalPosition);
       Worm?.OnSegmentDied(this);
-      QueueFree();
     }
-  }
-
-  void SpawnExplosion(Vector3 position)
-  {
-    var explosion = _explosionPrefab.Instantiate<ExplosionScript>();
-    explosion.Init(2f);
-    GetTree().CurrentScene.AddChild(explosion);
-    explosion.GlobalPosition = position;
+    base.TakeDamage(amount, hitPosition);
   }
 
   public void SetColor(Color color)
