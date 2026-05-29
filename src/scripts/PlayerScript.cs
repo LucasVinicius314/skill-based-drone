@@ -28,11 +28,14 @@ public partial class PlayerScript : RigidBody3D
   int _health;
   int _primaryIndex;
   int _secondaryIndex;
+  bool _thirdPerson;
 
-  // weapons discovered from Mount children by order: [0]=primary, [1]=secondary
   WeaponScript[] _weapons;
 
   Camera3D _camera;
+  Transform3D _fpvLocalTransform;
+  Transform3D _mountLocalTransform;
+  Node3D _mount;
   CanvasLayer _canvasLayer;
   Label _healthLabel;
   HudScript _hud;
@@ -51,7 +54,11 @@ public partial class PlayerScript : RigidBody3D
   {
     Input.MouseMode = Input.MouseModeEnum.Captured;
 
+    _mount = GetNode<Node3D>("Mount");
     _camera = GetNode<Camera3D>("Mount/Camera3D");
+    _fpvLocalTransform = _camera.Transform;
+    _mountLocalTransform = _mount.Transform;
+
     _bladesAudio = GetNode<AudioStreamPlayer3D>("BladesAudio");
     _hitmarkerAudio = GetNode<AudioStreamPlayer>("HitmarkerAudio");
     _metalImpactAudio = GetNode<AudioStreamPlayer>("MetalImpactAudio");
@@ -85,7 +92,7 @@ public partial class PlayerScript : RigidBody3D
 
     // weapons are WeaponScript nodes placed as children of Mount in scene order
     // index 0 = primary (fire), index 1 = secondary (fire_missile)
-    _weapons = GetNode<Node3D>("Mount").GetChildren().OfType<WeaponScript>().ToArray();
+    _weapons = _mount.GetChildren().OfType<WeaponScript>().ToArray();
     _primaryIndex = 0;
     _secondaryIndex = 1;
   }
@@ -129,7 +136,7 @@ public partial class PlayerScript : RigidBody3D
       }
     }
 
-    if (@event is InputEventKey key && key.Pressed)
+    if (@event is InputEventKey key && key.Pressed && !key.Echo)
     {
       if (key.Keycode == Key.Escape)
       {
@@ -138,6 +145,15 @@ public partial class PlayerScript : RigidBody3D
       else if (key.Keycode == Key.R)
       {
         GetTree().ReloadCurrentScene();
+      }
+      else if (key.Keycode == Key.V)
+      {
+        _thirdPerson = !_thirdPerson;
+        if (!_thirdPerson)
+        {
+          _mount.Transform = _mountLocalTransform;
+          _camera.Transform = _fpvLocalTransform;
+        }
       }
     }
   }
@@ -184,8 +200,24 @@ public partial class PlayerScript : RigidBody3D
       flare.Launch(GlobalPosition, LinearVelocity);
     }
 
+    if (_thirdPerson)
+    {
+      UpdateTpvMount();
+    }
+
     UpdateHud();
     UpdateLockOnAlarm((float)delta);
+  }
+
+  void UpdateTpvMount()
+  {
+    // In TPV, remove the baked FPV tilt from Mount so the drone body looks level.
+    // Replace Mount's local basis with an identity basis (no tilt offset).
+    _mount.Transform = new Transform3D(Basis.Identity, _mountLocalTransform.Origin);
+
+    // Place the camera 4 units behind and 1.5 units above in Mount-local space
+    // (which is now aligned with the Player/RigidBody3D axes).
+    _camera.Transform = new Transform3D(Basis.Identity, new Vector3(0, 1.5f, 4f));
   }
 
   void UpdateLockOnAlarm(float delta)
