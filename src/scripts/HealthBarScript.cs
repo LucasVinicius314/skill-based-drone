@@ -8,6 +8,7 @@ public partial class HealthBarScript : Node3D
   MeshInstance3D _fill;
   MeshInstance3D _ghost;
   StandardMaterial3D _ghostMat;
+  Label3D _label;
   float _ghostRatio;
   float _ghostAlpha;
   Camera3D _camera;
@@ -52,6 +53,18 @@ public partial class HealthBarScript : Node3D
     };
     _fill = new MeshInstance3D { Mesh = new QuadMesh { Size = new Vector2(width, height), Material = fillMat } };
     AddChild(_fill);
+
+    _label = new Label3D
+    {
+      FontSize = 48,
+      PixelSize = 0.012f,
+      NoDepthTest = true,
+      RenderPriority = 4,
+      HorizontalAlignment = HorizontalAlignment.Right,
+      OutlineSize = 0,
+    };
+    _label.Position = new Vector3(width * 0.5f, height * 0.5f + 0.3f, 0);
+    AddChild(_label);
   }
 
   public override void _Process(double delta)
@@ -109,6 +122,12 @@ public partial class HealthBarScript : Node3D
     ((QuadMesh)_ghost.Mesh).Size = new Vector2(ghostWidth, height);
     var fillRightEdge = -width * 0.5f + fillWidth;
     _ghost.Position = new Vector3(fillRightEdge + ghostWidth * 0.5f, 0, 0);
+
+    if (_label != null)
+    {
+      _label.Text = _current.ToString();
+      _label.Modulate = Color.FromHsv(Mathf.Lerp(0f, 0.33f, ratio), 0.8f, 1f);
+    }
     _ghostMat.AlbedoColor = new Color(1f, 0.85f, 0.3f, _ghostAlpha);
   }
 }

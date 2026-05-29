@@ -11,6 +11,8 @@ public partial class HudScript : Control
   public float BankDeg;      // right-roll positive
 
   // colours
+  const string FontColor = "font_color";
+
   static readonly Color ColMain   = new Color(0.0f, 1.0f, 0.4f, 0.85f);
   static readonly Color ColDim    = new Color(0.0f, 1.0f, 0.4f, 0.35f);
   static readonly Color ColText   = new Color(0.0f, 1.0f, 0.4f, 1.0f);
@@ -27,6 +29,8 @@ public partial class HudScript : Control
   const float CompassHeight    = 28f;
   const float CompassPixPerDeg = CompassWidth / 60f; // 60° visible window
 
+  public WeaponScript[] Weapons;
+
   Label _speedLabel;
   Label _altLabel;
   Label _hdgLabel;
@@ -35,6 +39,19 @@ public partial class HudScript : Control
   Label _fpsLabel;
   Label _timerLabel;
   double _elapsed;
+
+  const int   AmmoMaxIcons  = 10;
+  const float AmmoIconSize  = 10f;
+  const float AmmoIconGap   = 4f;
+  const float AmmoBarH      = 5f;
+  const float AmmoLabelH    = 16f; // space for weapon name + count on same row
+  const float AmmoIconsY    = AmmoLabelH + 4f;    // icons start below label row
+  const float AmmoBarY      = AmmoIconsY + AmmoIconSize + 8f; // bar starts below icons with gap
+  const float AmmoWidgetW   = AmmoMaxIcons * (AmmoIconSize + AmmoIconGap) - AmmoIconGap;
+  const float AmmoWidgetH   = AmmoBarY + AmmoBarH + 4f;
+  const float AmmoWidgetGap = 12f;
+
+  static readonly string[] WeaponNames = { "GUN", "MSL" };
 
   public override void _Ready()
   {
@@ -81,13 +98,14 @@ public partial class HudScript : Control
     vbox.AddChild(_altLabel);
     vbox.AddChild(_hdgLabel);
     vbox.AddChild(_bankLabel);
+
   }
 
   static Label MakeLabel(string text)
   {
     var lbl = new Label();
     lbl.Text = text;
-    lbl.AddThemeColorOverride("font_color", ColText);
+    lbl.AddThemeColorOverride(FontColor, ColText);
     lbl.AddThemeFontSizeOverride("font_size", 13);
     return lbl;
   }
@@ -116,6 +134,172 @@ public partial class HudScript : Control
     DrawPitchLadder(center);
     DrawCompassTape();
     DrawBankIndicator(center);
+    DrawAmmoWidgets();
+  }
+
+  void DrawAmmoWidgets()
+  {
+    if (Weapons == null) return;
+
+    // stack widgets bottom-right, growing upward
+    var totalH = Weapons.Length * AmmoWidgetH + (Weapons.Length - 1) * AmmoWidgetGap;
+    var baseX = Size.X - AmmoWidgetW - 20f;
+    var baseY = Size.Y - 20f - totalH;
+
+    for (var i = 0; i < Weapons.Length; i++)
+    {
+      var origin = new Vector2(baseX, baseY + i * (AmmoWidgetH + AmmoWidgetGap));
+      DrawAmmoWidget(Weapons[i], i, origin);
+    }
+  }
+
+  void DrawAmmoWidget(WeaponScript w, int index, Vector2 origin)
+  {
+    var tag = index < WeaponNames.Length ? WeaponNames[index] : $"W{index}";
+    var labelColor = w.IsReloading ? new Color(1f, 0.7f, 0f, 1f) : ColText;
+    var widgetW = AmmoWidgetW + 16f;
+
+    DrawRect(new Rect2(origin, new Vector2(widgetW, AmmoWidgetH)),
+      new Color(0f, 0f, 0f, 0.55f));
+
+    // weapon name — left side of header row
+    DrawString(ThemeDB.FallbackFont, origin + new Vector2(4f, AmmoLabelH - 2f),
+      tag, HorizontalAlignment.Left, -1, 13, labelColor);
+
+    // ammo count — right side of header row
+    string countStr;
+    if (w.MaxAmmo <= 0)
+    {
+      countStr = "∞";
+    }
+    else if (w.IsReloading)
+    {
+      countStr = "RLDG";
+    }
+    else
+    {
+      countStr = $"{w.Ammo}/{w.MaxAmmo}";
+    }
+    DrawString(ThemeDB.FallbackFont, origin + new Vector2(40f, AmmoLabelH - 2f),
+      countStr, HorizontalAlignment.Left, -1, 13, labelColor);
+
+    if (w.MaxAmmo > 0)
+    {
+      var iconsOrigin = origin + new Vector2(4f, AmmoIconsY);
+      DrawAmmoIcons(w, index == 1, iconsOrigin);
+    }
+
+    DrawAmmoBar(w, origin);
+  }
+
+  void DrawAmmoIcons(WeaponScript w, bool isMissile, Vector2 iconsOrigin)
+  {
+    var icons = Mathf.Min(w.MaxAmmo, AmmoMaxIcons);
+    var ammoPerIcon = w.MaxAmmo / (float)icons;
+    var filledIcons = Mathf.CeilToInt(w.Ammo / ammoPerIcon);
+    var lowAmmo = filledIcons <= icons / 4;
+
+    for (var j = 0; j < icons; j++)
+    {
+      var pos = new Vector2(iconsOrigin.X + j * (AmmoIconSize + AmmoIconGap), iconsOrigin.Y);
+      var filled = j < filledIcons;
+      Color iconColor;
+      if (!filled)
+      {
+        iconColor = new Color(ColMain.R, ColMain.G, ColMain.B, 0.18f);
+      }
+      else if (lowAmmo)
+      {
+        iconColor = new Color(1f, 0.2f, 0.2f, 1f);
+      }
+      else
+      {
+        iconColor = ColMain;
+      }
+
+      if (isMissile)
+      {
+        DrawMissileIcon(pos, iconColor, filled);
+      }
+      else
+      {
+        DrawBulletIcon(pos, iconColor, filled);
+      }
+    }
+  }
+
+  void DrawAmmoBar(WeaponScript w, Vector2 origin)
+  {
+    var barOrigin = origin + new Vector2(4f, AmmoBarY);
+    var barW = AmmoWidgetW + 8f;
+
+    DrawRect(new Rect2(barOrigin, new Vector2(barW, AmmoBarH)),
+      new Color(ColMain.R, ColMain.G, ColMain.B, 0.15f));
+
+    float fillRatio;
+    Color fillColor;
+    if (w.IsReloading)
+    {
+      fillRatio = w.ReloadProgress;
+      fillColor = new Color(1f, 0.7f, 0f, 0.9f);
+    }
+    else if (w.MaxAmmo > 0)
+    {
+      fillRatio = (float)w.Ammo / w.MaxAmmo;
+      fillColor = ColMain;
+    }
+    else
+    {
+      fillRatio = 1f;
+      fillColor = ColMain;
+    }
+
+    var fillW = barW * fillRatio;
+    if (fillW > 0f)
+    {
+      DrawRect(new Rect2(barOrigin, new Vector2(fillW, AmmoBarH)), fillColor);
+    }
+
+    DrawRect(new Rect2(barOrigin, new Vector2(barW, AmmoBarH)),
+      new Color(ColMain.R, ColMain.G, ColMain.B, 0.4f), false, 1f);
+  }
+
+  void DrawBulletIcon(Vector2 pos, Color color, bool filled)
+  {
+    // bullet: rounded rectangle — tall and narrow
+    var rect = new Rect2(pos.X + 2f, pos.Y, AmmoIconSize - 4f, AmmoIconSize);
+    if (filled)
+    {
+      DrawRect(rect, color);
+    }
+    else
+    {
+      DrawRect(rect, color, false, 1f);
+    }
+    // casing tip (top cap)
+    DrawRect(new Rect2(pos.X + 2f, pos.Y, AmmoIconSize - 4f, 3f), color);
+  }
+
+  void DrawMissileIcon(Vector2 pos, Color color, bool filled)
+  {
+    // missile: triangle nose + rectangle body
+    var bodyTop = pos.Y + 4f;
+    var bodyRect = new Rect2(pos.X + 2f, bodyTop, AmmoIconSize - 4f, AmmoIconSize - 4f);
+    // nose triangle
+    var noseL = new Vector2(pos.X + 2f, bodyTop);
+    var noseR = new Vector2(pos.X + AmmoIconSize - 2f, bodyTop);
+    var noseTip = new Vector2(pos.X + AmmoIconSize * 0.5f, pos.Y);
+    if (filled)
+    {
+      DrawColoredPolygon(new[] { noseTip, noseL, noseR }, color);
+      DrawRect(bodyRect, color);
+    }
+    else
+    {
+      DrawLine(noseTip, noseL, color, 1f);
+      DrawLine(noseTip, noseR, color, 1f);
+      DrawRect(bodyRect, color, false, 1f);
+    }
   }
 
   void DrawPitchLadder(Vector2 center)

@@ -61,6 +61,8 @@ when asked to enrich CLAUDE.md, enrich this file with stuff that you judge usefu
 * `MissileScript.Launch(origin, forward, forcedTarget, speed)` — speed sets the instance field used by homing physics too. default 100 m/s
 * weapon prefabs: `prefabs/weapon_50cal.tscn`,  `prefabs/weapon_minigun.tscn`,  `prefabs/weapon_missile_launcher.tscn`
 * to add a new gun: create a prefab with `WeaponScript` + `Barrel` marker, add it as a child of `Mount` in `player.tscn` at the desired position — `PlayerScript` picks it up automatically
+* ammo system: `WeaponScript` has `[Export] int maxAmmo` (0 = unlimited) and `[Export] float reloadTime`. reload is background — fires keep ticking on the active weapon while this one reloads. exposes `Ammo`, `MaxAmmo`, `IsReloading`, `ReloadProgress` for HUD use
+* `PlayerScript` passes `_weapons` array to `_hud.Weapons` after discovering them — HUD reads weapon state each frame in `_Draw`
 
 ## Missile system
 
@@ -86,13 +88,14 @@ when asked to enrich CLAUDE.md, enrich this file with stuff that you judge usefu
 ## Health bar
 
 * health bars use `prefabs/health_bar.tscn` (HealthBarScript) — a shared prefab instanced as a child named `HealthBar` in each enemy prefab
-* `HealthBarScript` builds three `QuadMesh` children in code: dark background, amber ghost (damage indicator), green-to-red fill. all share the parent transform
+* `HealthBarScript` builds three `QuadMesh` children + one `Label3D` in code: dark background (priority 1), amber ghost (priority 2), green-to-red fill (priority 3), HP number label (priority 4)
 * billboarding is done via `LookAt(_camera.GlobalPosition, Vector3.Up)` on the parent `Node3D` in `_Process` — do NOT put `BillboardMode` on individual materials, they will desync at oblique angles
 * after `LookAt`, call `RotateObjectLocal(Vector3.Up, Mathf.Pi)` to flip the quads toward the camera (`QuadMesh` faces +Z, `LookAt` points -Z at target)
-* guard `LookAt` with a distance check and a cross-product check to avoid degenerate up-vector cases
+* guard `LookAt` with a distance check (`> 0.1f`) and a cross-product check (`dir.Cross(Vector3.Up).LengthSquared() > 0.001f`) to avoid degenerate up-vector crashes
 * `EnemyScript` calls `_healthBar?.Init(maxHealth)` after `OnReady()` and `_healthBar?.SetRatio(float)` in `TakeDamage`
-* ghost effect: on damage, captures previous ratio as `_ghostRatio`, sets `_ghostAlpha = 1`, waits `GhostFadeDelay` then fades. ghost quad sits between fill's right edge and previous right edge
-* fill quad X position: center-anchored, so left edge is at `-width/2`, right edge at `-width/2 + fillWidth`. ghost center: `fillRightEdge + ghostWidth/2`
+* ghost effect: on damage, captures previous ratio as `_ghostRatio`, sets `_ghostAlpha = 1`, waits `GhostFadeDelay` (0.5s) then fades at `GhostFadeSpeed` (1.5/s). ghost quad sits between fill right edge and previous right edge
+* fill quad X: center-anchored at origin, so right edge = `-width/2 + fillWidth`. ghost center = `fillRightEdge + ghostWidth/2`
+* HP label: `Label3D`, right-aligned to bar's right edge, above the bar, colored to match fill (red→green via `Color.FromHsv`), no outline, `PixelSize = 0.012f`
 
 ## Enemy architecture
 
@@ -111,6 +114,12 @@ when asked to enrich CLAUDE.md, enrich this file with stuff that you judge usefu
 * tanks snap to ground each frame they move using the same raycast pattern
 * `Basis.LookingAt` requires a non-zero, non-parallel direction — always compute `flatDir` from the XZ projection of `toPlayer` before calling it
 * tank barrel node path: `Turret/Barrel` — cache it in `_Ready` to avoid `GetNode` exceptions mid-physics-process
+
+## OnReady pattern (EnemyScript subclasses)
+
+* `EnemyScript._Ready` runs setup in this order: player/camera/canvasLayer refs → `_healthBar` lookup → `OnReady()` → `_health = maxHealth` → `_healthBar.Init(maxHealth)`
+* subclasses MUST set `maxHealth` and `explosionRadius` inside `OnReady()`, not at field declaration — field values are set before `_Ready` runs and will be overwritten
+* do NOT call `base._Ready()` from subclasses — `EnemyScript._Ready` is sealed via the `OnReady` hook pattern
 
 ## Sounds folder
 
@@ -153,3 +162,15 @@ defined in project input map:
 * `flare` — X key
 * `switch_weapon` — Q key (cycles primary weapon index, not currently wired to secondary)
 * `toggle_camera` — V key (defined in input map but handled via `key.Keycode == Key.V` in `_Input`)
+
+## HUD system (HudScript)
+
+* `HudScript : Control` is instantiated in code by `PlayerScript` and added to `CanvasLayer`. it is NOT a scene file
+* all HUD rendering is done via `_Draw` (Godot's immediate-mode canvas API) — no child `Label` nodes except for the pre-existing `HealthLabel` which lives outside `HudScript`
+* `QueueRedraw()` is called every `_Process` frame to keep the draw fresh
+* `DrawString` with `HorizontalAlignment.Right` and a width param clips unreliably — prefer left-aligned at a computed X offset instead
+* ammo widgets are drawn bottom-right, stacked upward. layout uses named constants (`AmmoLabelH`, `AmmoIconsY`, `AmmoBarY`, `AmmoWidgetH`) so the vertical zones are explicit and don't overlap
+* icon grid: up to `AmmoMaxIcons` (10) icons per weapon. if `maxAmmo > 10`, each icon represents a chunk (`maxAmmo / icons` rounds). filled icons use `ColMain` (green), empty icons use dim alpha, low ammo (≤25%) turns red
+* bullet icon: tall narrow rect + top cap. missile icon: triangle nose + rectangle body. both drawn filled or outlined depending on ammo state
+* reload bar fills amber left-to-right as reload progresses; when full ammo it shows green proportional fill
+* weapon name (`GUN`/`MSL`) and count (`48/50` or `RLDG`) are drawn on the same header row — name at x+4, count at x+40

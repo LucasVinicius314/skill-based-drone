@@ -95,6 +95,7 @@ public partial class PlayerScript : RigidBody3D
     _weapons = _mount.GetChildren().OfType<WeaponScript>().ToArray();
     _primaryIndex = 0;
     _secondaryIndex = 1;
+    _hud.Weapons = _weapons;
   }
 
   public void PlayHitmarker() => _hitmarkerAudio.Play();

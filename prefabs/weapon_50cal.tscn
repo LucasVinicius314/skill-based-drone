@@ -16,6 +16,8 @@ damage = 3
 projectilePrefab = ExtResource("2_bullet")
 shootSound = ExtResource("3_sound")
 shootVolumeDb = -37.12
+maxAmmo = 30
+reloadTime = 5.0
 
 [node name="Barrel" type="Marker3D" parent="." unique_id=1870967068]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.36853075)

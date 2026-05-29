@@ -17,9 +17,10 @@ height = 0.01
 [node name="WeaponMinigun" type="Node3D" unique_id=1327055697]
 script = ExtResource("1_minigun")
 fireRate = 0.05
-projectileSpeed = 900.0
 projectilePrefab = ExtResource("2_bullet")
 shootSound = ExtResource("3_sound")
+maxAmmo = 200
+reloadTime = 7.0
 
 [node name="Barrel" type="Marker3D" parent="." unique_id=1888473914]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.31630242)

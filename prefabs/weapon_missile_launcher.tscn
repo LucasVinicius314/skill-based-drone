@@ -17,6 +17,8 @@ projectileSpeed = 100.0
 projectilePrefab = ExtResource("2_missile")
 shootSound = ExtResource("3_sound")
 shootVolumeDb = -40.475
+maxAmmo = 6
+reloadTime = 2.0
 
 [node name="Barrel" type="Marker3D" parent="." unique_id=856032034]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.010546884, -0.36489183)

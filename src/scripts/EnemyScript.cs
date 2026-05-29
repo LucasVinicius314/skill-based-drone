@@ -53,4 +53,16 @@ public partial class EnemyScript : Node3D
   }
 
   protected float RandomizedFireTimer(float fireRate) => GD.Randf() * fireRate;
+
+  public static Vector3 AddSpread(Vector3 forward, float angleDeg)
+  {
+    var rng = new RandomNumberGenerator();
+    var axis = forward.Cross(Vector3.Up).Normalized();
+    if (axis.LengthSquared() < 0.001f)
+    {
+      axis = forward.Cross(Vector3.Right).Normalized();
+    }
+    axis = axis.Rotated(forward, rng.RandfRange(0f, Mathf.Tau));
+    return forward.Rotated(axis, Mathf.DegToRad(rng.RandfRange(0f, angleDeg))).Normalized();
+  }
 }

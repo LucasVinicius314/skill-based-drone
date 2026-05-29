@@ -33,7 +33,7 @@ public partial class DroneEnemyScript : EnemyScript
 
   void ShootAtPlayer()
   {
-    var forward = (_player.GlobalPosition - GlobalPosition).Normalized();
+    var forward = AddSpread((_player.GlobalPosition - GlobalPosition).Normalized(), 0.2f);
     var bullet = _bulletPrefab.Instantiate<BulletScript>();
     GetTree().CurrentScene.AddChild(bullet);
     bullet.Launch(GlobalPosition, forward, BulletScript.Faction.Enemy, damage);

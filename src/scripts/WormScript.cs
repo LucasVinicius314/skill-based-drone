@@ -63,7 +63,7 @@ public partial class WormScript : Node3D
     if (_fireTimer <= 0f)
     {
       _fireTimer = fireRate;
-      var forward = (_player.GlobalPosition - _segments[0].GlobalPosition).Normalized();
+      var forward = EnemyScript.AddSpread((_player.GlobalPosition - _segments[0].GlobalPosition).Normalized(), 0.2f);
       var bullet = _bulletPrefab.Instantiate<BulletScript>();
       GetTree().CurrentScene.AddChild(bullet);
       bullet.Launch(_segments[0].GlobalPosition, forward, BulletScript.Faction.Enemy);
