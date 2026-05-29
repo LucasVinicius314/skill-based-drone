@@ -19,9 +19,11 @@ prefer using `var foo = bar;` instead of using the type in the declaration
 
 avoid redundant private declarations
 
-never use `[Export] string` fields for asset paths — that's the worst of both worlds. instead: use `GD.Load<PackedScene>("res://prefabs/foo.tscn")` at field init for things that don't need customization, and use `[Export] PackedScene` (or `[Export] AudioStream`, etc.) for things that vary per-instance and need to be set in the inspector
+never use `[Export] string` fields for asset paths — that's the worst of both worlds. instead: use `GD.Load<PackedScene>("res://prefabs/foo.tscn")` at field init for things that don't need customization, and use `[Export] PackedScene` (or `[Export] AudioStream` , etc.) for things that vary per-instance and need to be set in the inspector
 
 the drone should behave like an fpv drone with first person camera controls just like the battlefield helicopter control scheme, like this: W and S for throttle, A and D for yaw, mouse X for roll, mouse Y for pitch
+
+when asked to enrich CLAUDE.md, enrich this file with stuff that you judge useful to know for future sessions, context that you are giving yourself that will help you solve problems and develop features. no need to write every single thing, just things that you think will help you. also, you can tweak other things on this file that you judge need or could be changed and improved
 
 ## Godot-specific gotchas
 
@@ -38,7 +40,7 @@ the drone should behave like an fpv drone with first person camera controls just
 
 * `PhysicsRayQueryParameters3D` has separate `CollideWithAreas` and `CollideWithBodies` flags — if either is false the ray passes through those colliders silently. player bullets need both true to hit walls and enemies
 * `IntersectShape` can be unreliable for splash damage across mixed collider types and layers — iterating `GetTree().GetNodesInGroup()` with a distance check is simpler and more predictable
-* to use groups, call `AddToGroup("name")` in `_Ready()`. current groups: `"targets"` (TargetScript, TankScript), `"worm_segments"` (WormSegmentScript), `"missiles"` (MissileScript), `"flares"` (FlareScript)
+* to use groups, call `AddToGroup("name")` in `_Ready()`. current groups: `"targets"` (DroneEnemyScript, TankScript), `"worm_segments"` (WormSegmentScript), `"missiles"` (MissileScript), `"flares"` (FlareScript)
 
 ## Architecture patterns used
 
@@ -57,7 +59,7 @@ the drone should behave like an fpv drone with first person camera controls just
 * projectile orientation: `WeaponScript.TryFire` calls `projectile.LookAt(origin + forward, Vector3.Up)` after `AddChild` so the model faces the flight direction before `Launch` is called
 * `BulletScript.Launch(origin, forward, owner, damage, speed)` — speed is now a param, not an export. default 900 m/s
 * `MissileScript.Launch(origin, forward, forcedTarget, speed)` — speed sets the instance field used by homing physics too. default 100 m/s
-* weapon prefabs: `prefabs/weapon_50cal.tscn`, `prefabs/weapon_minigun.tscn`, `prefabs/weapon_missile_launcher.tscn`
+* weapon prefabs: `prefabs/weapon_50cal.tscn`,  `prefabs/weapon_minigun.tscn`,  `prefabs/weapon_missile_launcher.tscn`
 * to add a new gun: create a prefab with `WeaponScript` + `Barrel` marker, add it as a child of `Mount` in `player.tscn` at the desired position — `PlayerScript` picks it up automatically
 
 ## Missile system
@@ -81,26 +83,42 @@ the drone should behave like an fpv drone with first person camera controls just
 * `SmokeParticleScript` shares a static `SphereMesh` but still creates one `StandardMaterial3D` per instance (needed for per-instance alpha fade). keep spawn rate and lifetime low to bound the count
 * `Basis.Slerp` throws `InvalidOperationException` if the basis is not normalized — call `.Orthonormalized()` before `Slerp` on any basis that may have been affected by physics
 
-## Health bar billboarding
+## Health bar
 
-* health bars are `Node3D` parents with two `MeshInstance3D` children (background + fill), positioned above the enemy
-* since enemies rotate their whole body with `LookAt`, the health bar must be explicitly re-oriented each frame: `_healthBar.LookAt(_camera.GlobalPosition, Vector3.Up)`
-* the fill bar is scaled and offset on X to represent remaining health: `Scale.X = health/maxHealth`, `Origin.X = (health/maxHealth - 1) * 0.5`
+* health bars use `prefabs/health_bar.tscn` (HealthBarScript) — a shared prefab instanced as a child named `HealthBar` in each enemy prefab
+* `HealthBarScript` builds three `QuadMesh` children in code: dark background, amber ghost (damage indicator), green-to-red fill. all share the parent transform
+* billboarding is done via `LookAt(_camera.GlobalPosition, Vector3.Up)` on the parent `Node3D` in `_Process` — do NOT put `BillboardMode` on individual materials, they will desync at oblique angles
+* after `LookAt`, call `RotateObjectLocal(Vector3.Up, Mathf.Pi)` to flip the quads toward the camera (`QuadMesh` faces +Z, `LookAt` points -Z at target)
+* guard `LookAt` with a distance check and a cross-product check to avoid degenerate up-vector cases
+* `EnemyScript` calls `_healthBar?.Init(maxHealth)` after `OnReady()` and `_healthBar?.SetRatio(float)` in `TakeDamage`
+* ghost effect: on damage, captures previous ratio as `_ghostRatio`, sets `_ghostAlpha = 1`, waits `GhostFadeDelay` then fades. ghost quad sits between fill's right edge and previous right edge
+* fill quad X position: center-anchored, so left edge is at `-width/2`, right edge at `-width/2 + fillWidth`. ghost center: `fillRightEdge + ghostWidth/2`
+
+## Enemy architecture
+
+* `EnemyScript : Node3D` — base class for all enemies. owns: `maxHealth`, `explosionRadius`, `_health`, `_player`, `_camera`, `_canvasLayer`, `_healthBar`, `TakeDamage(int, Vector3)`, `SpawnExplosion`, `RandomizedFireTimer`
+* subclasses override `OnReady()` (called before `_health = maxHealth`) to set `maxHealth`, `explosionRadius`, call `AddToGroup`, and do their own init
+* `TankScript : EnemyScript` — ground enemy, fires missiles, moves toward player, snaps to ground
+* `DroneEnemyScript : EnemyScript` — floating target, fires bullets, rotates to face player
+* `WormSegmentScript : EnemyScript` — individual worm segment; overrides `TakeDamage` to notify `Worm.OnSegmentDied` before calling base when health hits 0
+* `WormScript : Node3D` — NOT an EnemyScript subclass; it has no health itself, only segments do. manages segment chain movement and firing
+* bullet/missile hit detection casts to `EnemyScript` directly — adding a new enemy subclass gets damage handling for free as long as it's in the right group
+* staggered spawn: always init fire timers with `RandomizedFireTimer(fireRate)` (returns `GD.Randf() * fireRate`) to avoid all enemies firing simultaneously on first frame
 
 ## Ground enemies (TankScript)
 
-* tanks spawn via `TargetSpawnerScript` using a downward raycast from a random XZ position to find terrain surface — `CollideWithAreas = false`, `CollideWithBodies = true`
+* tanks spawn via `TargetSpawnerScript` using a downward raycast from a random XZ position to find terrain surface — `CollideWithAreas = false`,  `CollideWithBodies = true`
 * tanks snap to ground each frame they move using the same raycast pattern
 * `Basis.LookingAt` requires a non-zero, non-parallel direction — always compute `flatDir` from the XZ projection of `toPlayer` before calling it
 * tank barrel node path: `Turret/Barrel` — cache it in `_Ready` to avoid `GetNode` exceptions mid-physics-process
 
 ## Sounds folder
 
-audio files live in `sounds/`. notable files:
+audio files live in `sounds/` . notable files:
 * `49483__lorenzosu__helicopterraw_30sec.wav` — drone blades loop
 * `653191__sebastianvdb__close-gun-shots-trim.mp3` — gun shot
 * `hitmarker.mp3` — hitmarker
-* `268557__cydon__explosion_001.mp3` — explosion (5.6s, use `MaxDistance=2000`, `UnitSize=100`)
+* `268557__cydon__explosion_001.mp3` — explosion (5.6s, use `MaxDistance=2000`,  `UnitSize=100`)
 * `521377__jarusca__rocket-launch.mp3` — missile launch
 * `620077__ryankingart__metal-impact-trim.mp3` — player hull impact
 
@@ -118,6 +136,14 @@ player node path: `Player` (RigidBody3D, PlayerScript)
 * `MetalImpactAudio` — AudioStreamPlayer (plays on collision and on TakeDamage)
 * shoot audio is owned by each `WeaponScript` instance, not a top-level node
 
+## Camera system
+
+* single `Camera3D` under `Mount` — used for both FPV and TPV
+* FPV: camera sits at its original local transform inside the tilted `Mount`
+* TPV: `UpdateTpvMount()` runs each physics frame — resets `Mount` local basis to identity (removing the baked FPV tilt), places camera at `(0, 1.5, 4)` in local space (behind/above drone)
+* toggle with V key; on switch back to FPV, restore both `_mount.Transform = _mountLocalTransform` and `_camera.Transform = _fpvLocalTransform`
+* `Mount` is part of the drone body — never reparent or move it for camera purposes
+
 ## Input actions
 
 defined in project input map:
@@ -126,3 +152,4 @@ defined in project input map:
 * `fire_missile` — right mouse / secondary fire
 * `flare` — X key
 * `switch_weapon` — Q key (cycles primary weapon index, not currently wired to secondary)
+* `toggle_camera` — V key (defined in input map but handled via `key.Keycode == Key.V` in `_Input`)
