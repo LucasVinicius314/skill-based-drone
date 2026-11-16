@@ -6,6 +6,7 @@ public partial class Main : Node3D
 {
   const string MenuScene = "res://scenes/menu.tscn";
   const float SpawnSpacing = 4f;
+  const double JoinTimeoutSeconds = 25;
 
   static readonly Vector3 SpawnOrigin = new(0.34f, 0.685f, 2.23f);
 
@@ -17,6 +18,9 @@ public partial class Main : Node3D
   Node _players;
   bool _started;
   bool _leaving;
+  double _joinWait;
+  CanvasLayer _joinOverlay;
+  Label _joinLabel;
   int _spawnSlot;
 
   public override void _Ready()
@@ -32,6 +36,7 @@ public partial class Main : Node3D
     _session.CodeReady += OnRoomOpen;
     _session.Failed += OnFailed;
     _session.Ended += OnEnded;
+    _session.StatusChanged += SetJoinStatus;
 
     var request = _session.Pending ?? new StartRequest(SessionKind.Solo);
     _session.Pending = null;
@@ -39,6 +44,7 @@ public partial class Main : Node3D
     switch (request.Kind)
     {
       case SessionKind.Client:
+        BuildJoinOverlay(request.Code ?? "");
         _session.JoinRoom(request.Code ?? "");
         break;
       case SessionKind.Host:
@@ -59,6 +65,61 @@ public partial class Main : Node3D
     _session.CodeReady -= OnRoomOpen;
     _session.Failed -= OnFailed;
     _session.Ended -= OnEnded;
+    _session.StatusChanged -= SetJoinStatus;
+  }
+
+  // a client sees this until its own drone exists, so a join that stalls says so instead of showing an empty world
+  void BuildJoinOverlay(string code)
+  {
+    _joinOverlay = new CanvasLayer { Layer = 50 };
+    var background = new ColorRect { Color = new Color(0.04f, 0.06f, 0.05f, 1f) };
+    background.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+    _joinOverlay.AddChild(background);
+
+    _joinLabel = new Label
+    {
+      Text = $"Joining {code.Trim().ToUpperInvariant()}...",
+      HorizontalAlignment = HorizontalAlignment.Center,
+      VerticalAlignment = VerticalAlignment.Center,
+    };
+    _joinLabel.AddThemeColorOverride("font_color", new Color(0f, 1f, 0.4f, 1f));
+    _joinLabel.AddThemeFontSizeOverride("font_size", 22);
+    _joinLabel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+    _joinOverlay.AddChild(_joinLabel);
+    AddChild(_joinOverlay);
+  }
+
+  void SetJoinStatus(string status)
+  {
+    if (_joinLabel != null && IsInstanceValid(_joinLabel))
+    {
+      _joinLabel.Text = status;
+    }
+  }
+
+  public override void _Process(double delta)
+  {
+    if (_joinOverlay == null)
+    {
+      return;
+    }
+
+    if (PlayerScript.Local != null)
+    {
+      _joinOverlay.QueueFree();
+      _joinOverlay = null;
+      return;
+    }
+
+    _joinWait += delta;
+    if (_joinWait > JoinTimeoutSeconds && !_leaving)
+    {
+      GD.PrintErr($"join stalled: peers={string.Join(",", Multiplayer.GetPeers())} me={Multiplayer.GetUniqueId()} players={_players.GetChildCount()} roster={_session.Roster.Count}");
+      _session.LastError = Multiplayer.GetPeers().Length == 0
+        ? "Could not reach the host. A strict network or firewall may be in the way."
+        : "Connected to the host, but it never gave you a drone. Make sure you both run the same version.";
+      BackToMenu();
+    }
   }
 
   // the host's part of the world: its own drone and the enemies. clients get both from the spawners

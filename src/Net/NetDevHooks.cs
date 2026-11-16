@@ -4,6 +4,7 @@ using System.Linq;
 // scripted checks, active only with dev flags (after `--`):
 //   --net-host / --net-join=CODE / --solo / --net-name=NAME / --net-url=URL / --net-no-friends   start without the menu
 //   --dev-pos=x,y,z,yawDeg  put the drone there at the start (to look at the terrain)
+//   --dev-reload-at=SEC     reload the scene (the R key) to check teardown, then quit 2 s later
 //   --net-tpv               switch to the third person camera (to see the other drones)
 //   --net-shoot-at=SEC      fire 30 shots at the nearest enemy, SEC s into the world
 //   --net-report-at=SEC     print `NET REPORT ...` lines (compare both sides), once
@@ -18,6 +19,7 @@ public partial class NetDevHooks : Node
   int _shotsLeft;
   bool _shot;
   bool _tpv;
+  bool _reloaded;
   bool _placed;
   bool _reported;
   bool _screenshotTaken;
@@ -39,6 +41,13 @@ public partial class NetDevHooks : Node
       var at = new Vector3(float.Parse(v[0], System.Globalization.CultureInfo.InvariantCulture), float.Parse(v[1], System.Globalization.CultureInfo.InvariantCulture), float.Parse(v[2], System.Globalization.CultureInfo.InvariantCulture));
       player.GlobalTransform = new Transform3D(new Basis(Vector3.Up, Mathf.DegToRad(float.Parse(v[3], System.Globalization.CultureInfo.InvariantCulture))), at);
       player.LinearVelocity = Vector3.Zero;
+    }
+
+    if (!_reloaded && DevArgs.GetInt("dev-reload-at") is { } reloadAt && _elapsed > reloadAt)
+    {
+      _reloaded = true;
+      Input.ParseInputEvent(new InputEventKey { Keycode = Key.R, Pressed = true });
+      GetTree().CreateTimer(2).Timeout += () => GetTree().Quit(0);
     }
 
     if (!_tpv && DevArgs.Has("net-tpv") && _elapsed > 1)
