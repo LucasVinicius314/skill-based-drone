@@ -2,5 +2,15 @@
 .godot/
 /android/
 
-build/
+/build/
 .claude/
+.godot-path
+
+# .NET
+.mono/
+bin/
+obj/
+*.user
+
+# WebRTC native extension: downloaded by scripts/fetch-webrtc (not committed, about 90 MB)
+/addons/webrtc_native/

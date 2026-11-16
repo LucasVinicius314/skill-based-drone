@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://c2rck6riptj4r"]
 
-[ext_resource type="Script" uid="uid://bc161i0gq12bd" path="res://src/scripts/WeaponScript.cs" id="1_weapon50"]
+[ext_resource type="Script" uid="uid://bc161i0gq12bd" path="res://src/Weapons/WeaponScript.cs" id="1_weapon50"]
 [ext_resource type="PackedScene" uid="uid://dhnoaqgqurrxy" path="res://prefabs/bullet.tscn" id="2_bullet"]
 [ext_resource type="AudioStream" uid="uid://b1x57qghrjum7" path="res://sounds/653191__sebastianvdb__close-gun-shots-trim.mp3" id="3_sound"]
 
@@ -16,7 +16,7 @@ damage = 3
 projectilePrefab = ExtResource("2_bullet")
 shootSound = ExtResource("3_sound")
 shootVolumeDb = -37.12
-maxAmmo = 30
+maxAmmo = 50
 reloadTime = 5.0
 
 [node name="Barrel" type="Marker3D" parent="." unique_id=1870967068]

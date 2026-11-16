@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dhnoaqgqurrxy"]
 
-[ext_resource type="Script" uid="uid://24mmmovy0m2h" path="res://src/scripts/BulletScript.cs" id="1_bullet"]
+[ext_resource type="Script" uid="uid://24mmmovy0m2h" path="res://src/Weapons/BulletScript.cs" id="1_bullet"]
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_fh0yl"]
 radius = 0.0025

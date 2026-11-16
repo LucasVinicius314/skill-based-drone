@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://cs3ogjqojdn76"]
 
-[ext_resource type="Script" uid="uid://bxmjbh0m6bdj0" path="res://src/scripts/WormSegmentScript.cs" id="1_wormseg"]
+[ext_resource type="Script" uid="uid://bxmjbh0m6bdj0" path="res://src/Enemies/WormSegmentScript.cs" id="1_wormseg"]
 [ext_resource type="PackedScene" path="res://prefabs/health_bar.tscn" id="2_healthbar"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_seg"]

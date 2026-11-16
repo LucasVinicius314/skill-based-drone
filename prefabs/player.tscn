@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bcyysl4gq24n2"]
 
-[ext_resource type="Script" uid="uid://cfxaoqoik7fa3" path="res://src/scripts/PlayerScript.cs" id="1_72ieh"]
+[ext_resource type="Script" uid="uid://cfxaoqoik7fa3" path="res://src/Player/PlayerScript.cs" id="1_72ieh"]
 [ext_resource type="Texture2D" uid="uid://cx5g2crwr6koo" path="res://skyboxes/industrial_sunset_puresky_4k.exr" id="2_4dohe"]
 [ext_resource type="PackedScene" uid="uid://c2rck6riptj4r" path="res://prefabs/weapon_50cal.tscn" id="2_50cal"]
 [ext_resource type="PackedScene" uid="uid://bssr2y67ws3qs" path="res://prefabs/weapon_missile_launcher.tscn" id="3_missile"]
@@ -16,6 +16,12 @@ sky_material = SubResource("PanoramaSkyMaterial_r66lb")
 [sub_resource type="Environment" id="Environment_ht1c8"]
 background_mode = 2
 sky = SubResource("Sky_1txc5")
+tonemap_mode = 2
+fog_enabled = true
+fog_light_color = Color(0.62, 0.74, 0.88, 1)
+fog_density = 0.0009
+fog_sky_affect = 0.25
+fog_aerial_perspective = 0.5
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_1txc5"]
 shader = ExtResource("3_r66lb")
@@ -26,15 +32,28 @@ size = Vector3(0.55, 0.465, 0.125)
 [sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_g2jcq"]
 points = PackedVector3Array(2.081023, 0.027861059, -1.5227985, 2.081023, -0.028055996, -1.5227985, 1.0904286, 0.94131076, -3.5088444, 1.0904286, 0.94131076, -2.6665082, 1.4632769, 0.31752512, 2.6902547, 1.8104534, 0.022200316, 2.1486058, 1.4632769, -0.31772006, -0.7099819, 1.3422539, -0.321724, -1.5042632, 1.0904286, 0.5654931, -3.1498046, 1.8104534, -0.022395253, 2.1486058, 1.4632769, -0.31772006, 2.6902547, -1.0908356, 0.94131076, -3.5088444, -1.0908356, 0.94131076, -2.6665082, 0.2526405, 0.46912244, 3.121377, 0.4123745, 0.46912244, 2.9827037, 0.2526405, 0.19243667, 3.5044441, 1.4791687, 0.21273246, 2.7939162, 1.5667777, 0.19754514, 2.6916275, 0.82760096, -0.42127013, -1.5042632, -1.0908356, 0.5654931, -3.1498046, 1.5667777, -0.19774005, 2.6916275, 1.4791687, -0.21292737, 2.7939162, 0.2526405, -0.1924935, 3.5044441, 0.2526405, -0.4691793, 3.121377, 0.4123745, -0.4691793, 2.9827037, 0.82760096, -0.42127013, 2.6902547, -2.0814302, -0.028055996, -1.5227985, -2.0814302, 0.027861059, -1.5227985, -1.4636838, 0.31752512, 2.6902547, -0.41278148, 0.46912244, 2.9827037, -0.2530476, 0.46912244, 3.121377, -0.2530476, 0.19243667, 3.5044441, 0.4123745, -0.4691793, -1.4088395, -0.8280082, -0.42127013, -1.5042632, -1.3426609, -0.321724, -1.5042632, -0.2530476, -0.1924935, 3.5044441, -0.2530476, -0.4691793, 3.121377, -1.4636838, -0.31772006, -0.7099819, -1.4636838, -0.31772006, 2.6902547, -1.8108605, -0.022395253, 2.1486058, -1.8108605, 0.022200316, 2.1486058, -1.5675924, 0.19754514, 2.6916275, -1.4795756, 0.21273246, 2.7939162, -0.41278148, -0.4691793, -1.4088395, -0.8280082, -0.42127013, 2.6902547, -1.4795756, -0.21292737, 2.7939162, -0.41278148, -0.4691793, 2.9827037, -1.5675924, -0.19774005, 2.6916275)
 
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_sync"]
+properties/0/path = NodePath(".:SyncPosition")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:SyncRotation")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+properties/2/path = NodePath(".:SyncVelocity")
+properties/2/spawn = true
+properties/2/replication_mode = 1
+
 [node name="Player" type="RigidBody3D" unique_id=1035182302]
 physics_interpolation_mode = 1
 continuous_cd = true
 angular_damp = 2.0
 script = ExtResource("1_72ieh")
 throttleForce = 57.44
-yawTorque = 0.405
+yawTorque = 1.2
 pitchTorque = 15.88
 rollTorque = 7.89
+
+[node name="CameraRig" type="Node3D" parent="." unique_id=600000001]
 
 [node name="Mount" type="Node3D" parent="." unique_id=546730480]
 transform = Transform3D(1, 0, 0, 0, 0.9396926, -0.34202012, 0, 0.34202012, 0.9396926, 0, -0.3786693, -2.7888398)
@@ -123,8 +142,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.021497011, 0.08982143)
 mesh = SubResource("BoxMesh_ht1c8")
 
 [node name="BladesAudio" type="AudioStreamPlayer3D" parent="." unique_id=800000001]
-volume_db = -67.826
-unit_size = 348.45
+attenuation_model = 1
+volume_db = -36.987
+unit_size = 10.45
 autoplay = true
 max_distance = 1200.0
 
@@ -140,3 +160,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.7191038)
 [node name="PhysicsCollider" type="CollisionShape3D" parent="." unique_id=1612338461]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 0, 0.7191038)
 shape = SubResource("ConvexPolygonShape3D_g2jcq")
+
+[node name="Synchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_sync")

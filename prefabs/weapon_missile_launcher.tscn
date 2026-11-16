@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bssr2y67ws3qs"]
 
-[ext_resource type="Script" uid="uid://bc161i0gq12bd" path="res://src/scripts/WeaponScript.cs" id="1_missilelauncher"]
+[ext_resource type="Script" uid="uid://bc161i0gq12bd" path="res://src/Weapons/WeaponScript.cs" id="1_missilelauncher"]
 [ext_resource type="PackedScene" uid="uid://c3ujqsh2sxi8a" path="res://prefabs/missile.tscn" id="2_missile"]
 [ext_resource type="AudioStream" uid="uid://8ctega87t701" path="res://sounds/521377__jarusca__rocket-launch.mp3" id="3_sound"]
 

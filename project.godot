@@ -11,17 +11,17 @@ config_version=5
 [application]
 
 config/name="SkillBasedDrone"
-run/main_scene="uid://c5uuvjur3xtu6"
-config/features=PackedStringArray("4.6", "C#", "Forward Plus")
+run/main_scene="res://scenes/menu.tscn"
+config/features=PackedStringArray("4.7", "C#", "Forward Plus")
 config/icon="res://icon.svg"
+
+[autoload]
+
+NetSession="*res://src/Net/NetSession.cs"
 
 [dotnet]
 
 project/assembly_name="SkillBasedDrone"
-
-[editor_plugins]
-
-enabled=PackedStringArray("res://addons/gdt_terrain/plugin.cfg")
 
 [input]
 

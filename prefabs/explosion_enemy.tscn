@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://fj6q3ioy6x05"]
 
-[ext_resource type="Script" uid="uid://bn1jdcg3kdu42" path="res://src/scripts/ExplosionScript.cs" id="1_explosion"]
+[ext_resource type="Script" uid="uid://bn1jdcg3kdu42" path="res://src/Effects/ExplosionScript.cs" id="1_explosion"]
 [ext_resource type="AudioStream" uid="uid://bffraeo6iahgp" path="res://sounds/753843__evanboyerman__explosion-outdoors-medium.wav" id="2_audio"]
 
 [node name="Explosion" type="Node3D" unique_id=1426028213]

@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://tank_prefab_001"]
 
-[ext_resource type="Script" path="res://src/scripts/TankScript.cs" id="1_tank"]
+[ext_resource type="Script" path="res://src/Enemies/TankScript.cs" id="1_tank"]
 [ext_resource type="PackedScene" path="res://prefabs/health_bar.tscn" id="2_healthbar"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_body"]
@@ -27,6 +27,17 @@ size = Vector3(0.2, 0.2, 1.5)
 [sub_resource type="BoxShape3D" id="BoxShape3D_tank"]
 size = Vector3(2.5, 0.8, 3.5)
 
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_sync"]
+properties/0/path = NodePath(".:SyncPosition")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:SyncRotation")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+properties/2/path = NodePath(".:SyncHealth")
+properties/2/spawn = true
+properties/2/replication_mode = 2
+
 [node name="Tank" type="Node3D"]
 script = ExtResource("1_tank")
 
@@ -50,3 +61,6 @@ shape = SubResource("BoxShape3D_tank")
 
 [node name="HealthBar" parent="." instance=ExtResource("2_healthbar")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0)
+
+[node name="Synchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_sync")

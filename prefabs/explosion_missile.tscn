@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dygormhy06y8t"]
 
-[ext_resource type="Script" uid="uid://bn1jdcg3kdu42" path="res://src/scripts/ExplosionScript.cs" id="1_explosion"]
+[ext_resource type="Script" uid="uid://bn1jdcg3kdu42" path="res://src/Effects/ExplosionScript.cs" id="1_explosion"]
 [ext_resource type="AudioStream" uid="uid://bivfi711pqoea" path="res://sounds/268557__cydon__explosion_001.mp3" id="2_audio"]
 
 [node name="Explosion" type="Node3D" unique_id=1235403503]

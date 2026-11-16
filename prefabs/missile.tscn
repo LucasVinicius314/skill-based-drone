@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://c3ujqsh2sxi8a"]
 
-[ext_resource type="Script" uid="uid://ds7bslyy2v2qc" path="res://src/scripts/MissileScript.cs" id="1_missile"]
+[ext_resource type="Script" uid="uid://ds7bslyy2v2qc" path="res://src/Weapons/MissileScript.cs" id="1_missile"]
 
 [node name="Missile" type="Node3D" unique_id=847969861]
 script = ExtResource("1_missile")

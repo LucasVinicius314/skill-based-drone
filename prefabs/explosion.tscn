@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://explosion001"]
 
-[ext_resource type="Script" path="res://src/scripts/ExplosionScript.cs" id="1_explosion"]
+[ext_resource type="Script" path="res://src/Effects/ExplosionScript.cs" id="1_explosion"]
 
 [node name="Explosion" type="Node3D"]
 script = ExtResource("1_explosion")

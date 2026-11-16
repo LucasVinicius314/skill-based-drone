@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://d1uqa21m8m2b6"]
 
-[ext_resource type="Script" uid="uid://bc161i0gq12bd" path="res://src/scripts/WeaponScript.cs" id="1_minigun"]
+[ext_resource type="Script" uid="uid://bc161i0gq12bd" path="res://src/Weapons/WeaponScript.cs" id="1_minigun"]
 [ext_resource type="PackedScene" uid="uid://dhnoaqgqurrxy" path="res://prefabs/bullet.tscn" id="2_bullet"]
 [ext_resource type="AudioStream" uid="uid://b1x57qghrjum7" path="res://sounds/653191__sebastianvdb__close-gun-shots-trim.mp3" id="3_sound"]
 
