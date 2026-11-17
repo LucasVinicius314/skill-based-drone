@@ -16,6 +16,7 @@ public partial class WeaponScript : Node3D
   [Export] public float shake = 0.04f;   // camera shake per shot
   [Export] public float shootPitch = 1f;
   [Export] public float spread;          // cone half angle in degrees
+  [Export] public int splashDamage;      // at the centre of the burst, falling off to nothing at the radius
   [Export] public float splashRadius;    // > 0: rounds burst on impact (high explosive)
 
   AudioStreamPlayer3D _audio;
@@ -132,6 +133,7 @@ public partial class WeaponScript : Node3D
     {
       bullet.Authoritative = mine;
       bullet.SplashRadius = splashRadius;
+      bullet.SplashDamage = splashDamage;
       bullet.Launch(origin, forward, BulletScript.Faction.Player, damage, projectileSpeed);
     }
     else if (projectile is ILaunchable launchable)

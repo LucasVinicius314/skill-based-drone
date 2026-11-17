@@ -18,7 +18,7 @@ public partial class PlayerScript : RigidBody3D
   [Export] float bladePitchMax = 1.4f;
   [Export] float flareRate = 0.4f;
   [Export] float hitSpinForce = 8f;
-  [Export] int maxHealth = 10;
+  [Export] int maxHealth = 200;
 
   // replicated from the owner to every other peer, which shows this drone as a frozen puppet that follows them
   [Export] public Vector3 SyncPosition { get; set; }
@@ -255,10 +255,11 @@ public partial class PlayerScript : RigidBody3D
     _metalImpactAudio.Play();
     _health = Mathf.Max(_health - amount, 0);
     UpdateHealthLabel();
-    AddShake(0.7f);
+    var hit = Mathf.Clamp(amount / 60f, 0.05f, 1f); // a heavy hit shakes and spins more than a rifle round
+    AddShake(0.7f * hit);
 
     var rng = new RandomNumberGenerator();
-    ApplyTorque(new Vector3(rng.RandfRange(-1f, 1f), rng.RandfRange(-1f, 1f), rng.RandfRange(-1f, 1f)).Normalized() * hitSpinForce);
+    ApplyTorque(new Vector3(rng.RandfRange(-1f, 1f), rng.RandfRange(-1f, 1f), rng.RandfRange(-1f, 1f)).Normalized() * hitSpinForce * hit);
 
     if (_health <= 0)
     {

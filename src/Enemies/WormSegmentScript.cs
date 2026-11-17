@@ -9,7 +9,7 @@ public partial class WormSegmentScript : EnemyScript
 
   protected override void OnReady()
   {
-    maxHealth = 2;
+    maxHealth = 300;
     explosionRadius = 2f;
     AddToGroup("worm_segments");
   }

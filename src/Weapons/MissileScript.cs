@@ -9,7 +9,8 @@ public partial class MissileScript : Node3D, ILaunchable
 
   [Export] float lifetime = 6f;
   [Export] float splashRadius = 5f;
-  [Export] int splashDamage = 3;
+  [Export] int splashDamage = 1800;      // a Hellfire-class warhead, against enemies
+  [Export] int playerSplashDamage = 120; // against a drone, enemy missiles and your own alike
   [Export] float seekerRange = 30f;
   [Export] float turnRate = 3.5f;
   [Export] float maxTurnRate = 6f;
@@ -209,7 +210,7 @@ public partial class MissileScript : Node3D, ILaunchable
     if (result.Count > 0)
     {
       var hitPos = result["position"].AsVector3();
-      ApplySplash(hitPos);
+      ApplySplash(hitPos, result["collider"].As<Node>());
       var explosion = _explosionPrefab.Instantiate<ExplosionScript>();
       explosion.Init(splashRadius);
       GetTree().CurrentScene.AddChild(explosion);
@@ -248,12 +249,14 @@ public partial class MissileScript : Node3D, ILaunchable
     );
   }
 
-  void ApplySplash(Vector3 hitPos)
+  // the enemy the missile struck takes the full blast (a big target's centre is far from its surface); the rest
+  // inside the radius take less the further they are
+  void ApplySplash(Vector3 hitPos, Node collider)
   {
     var player = PlayerScript.Local;
     if (player != null && (_forcedTarget || Authoritative) && player.GlobalPosition.DistanceTo(hitPos) <= splashRadius)
     {
-      player.TakeDamage(splashDamage);
+      player.TakeDamage(Falloff(playerSplashDamage, player.GlobalPosition.DistanceTo(hitPos)));
     }
 
     if (!Authoritative)
@@ -261,21 +264,26 @@ public partial class MissileScript : Node3D, ILaunchable
       return;
     }
 
-    foreach (var target in GetTree().GetNodesInGroup("targets"))
-    {
-      if (target is EnemyScript enemy && enemy.GlobalPosition.DistanceTo(hitPos) <= splashRadius)
-      {
-        enemy.TakeDamage(splashDamage, hitPos);
-      }
-    }
+    var direct = collider?.GetParentOrNull<EnemyScript>() ?? collider as EnemyScript;
+    direct?.TakeDamage(splashDamage, hitPos);
 
-    foreach (var segment in GetTree().GetNodesInGroup("worm_segments"))
+    foreach (var group in _splashGroups)
     {
-      if (segment is EnemyScript w && w.GlobalPosition.DistanceTo(hitPos) <= splashRadius)
+      foreach (var node in GetTree().GetNodesInGroup(group))
       {
-        w.TakeDamage(splashDamage, hitPos);
+        if (node is EnemyScript enemy && enemy != direct)
+        {
+          var distance = enemy.GlobalPosition.DistanceTo(hitPos);
+          if (distance <= splashRadius)
+          {
+            enemy.TakeDamage(Falloff(splashDamage, distance), hitPos);
+          }
+        }
       }
     }
   }
 
+  static readonly string[] _splashGroups = { "targets", "worm_segments" };
+
+  int Falloff(int damage, float distance) => Mathf.Max(1, Mathf.RoundToInt(damage * Mathf.Lerp(1f, 0.25f, distance / splashRadius)));
 }

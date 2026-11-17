@@ -100,6 +100,10 @@ dev flags (after `--`): `--solo`, `--net-host`, `--net-join=CODE`, `--net-name=`
 * explosion: `ExplosionScript` spawns layered `GpuParticles3D` (fireball, debris, sparks, smoke) + flash sphere + shockwave torus, all scaled by a `radius` param passed via `Init(float radius)` before `AddChild`. smoke particles are reparented to scene root before the explosion node frees so they outlive it
 * long-lived particles that must outlive their parent: `RemoveChild(node)` → `GetTree().CurrentScene.AddChild(node)` → restore `GlobalPosition` → hook `node.Finished += node.QueueFree`
 
+## Damage scale
+
+health and damage are whole numbers where 1 point is about 0.4 kJ of round energy, so real calibres keep their proportions. player drone 200. rounds: 7.62 mm M134 8, .50 cal 45, 20 mm M24 and M61 140 (the M61 also bursts for 80 at the centre, falling to 0 at 6 m). missile 1800 on enemies (falloff to 25 percent at the radius), 120 on a drone. enemies: FPV drone 60 (shoots 8), tank 2500, worm segment 300, boss 40000 (turret rounds 35, missiles 120). `EnemyScript.MaxDamagePerRequest` (3000) must stay above the biggest single hit. a direct hit always deals full damage to the enemy struck, since a big target's centre is far from its surface
+
 ## Weapon system
 
 * `WeaponScript` is a `Node3D` component placed as a child of `Mount` in the player scene. it owns: fire rate, projectile speed, damage, projectile prefab, shoot sound, and a `Barrel` (`Marker3D`) child as the spawn point
@@ -152,6 +156,7 @@ dev flags (after `--`): `--solo`, `--net-host`, `--net-join=CODE`, `--net-name=`
 
 * `EnemyScript : Node3D` — base class for all enemies. owns: `maxHealth`, `explosionRadius`, `_health`, `_player` (the nearest drone, host only), `_healthBar`, `Sync*` properties, `Simulate(delta)`, `TakeDamage(int, Vector3)` (called by the local player's shots: feedback now, damage on the host), `SpawnExplosion`, `RandomizedFireTimer`
 * subclasses override `OnReady()` (called before `_health = maxHealth`) to set `maxHealth`, `explosionRadius`, call `AddToGroup`, and do their own init; `OnDied()` (host, before the explosion); `FreedBySpawner` (false for things a script builds itself)
+* `BossDroneScript : EnemyScript` — a 36 m quad-rotor gunship (`prefabs/boss_drone.tscn`, 400 health): the host flies it toward the nearest drone and fires 12 turrets (`Model/Turrets/TurretN`, each with a `Barrel` marker) and two homing missile pods (`MissileL/R`); every peer aims the turrets and spins the rotors for show. spawned once by `EnemySpawner` (`bossCount`), at least 600 m from the pad. each kill doubles the bosses alive (`OnDied` spawns `before + 1` through `SpawnBossReinforcements`, from just outside the border), capped at `EnemySpawner.MaxBosses` = 50
 * `TankScript : EnemyScript` — ground enemy, fires missiles, moves toward the nearest drone, snaps to ground
 * `DroneEnemyScript : EnemyScript` — floating target, fires bullets, rotates to face the nearest drone
 * `WormSegmentScript : EnemyScript` — individual worm segment; `OnDied` notifies `Worm.OnSegmentDied`

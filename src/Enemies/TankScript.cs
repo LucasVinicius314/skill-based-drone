@@ -14,7 +14,7 @@ public partial class TankScript : EnemyScript
 
   protected override void OnReady()
   {
-    maxHealth = 8;
+    maxHealth = 2500;
     explosionRadius = 4f;
     AddToGroup("targets");
     _barrel = GetNode<Node3D>("Turret/Barrel");

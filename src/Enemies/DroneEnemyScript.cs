@@ -3,14 +3,14 @@ using Godot;
 public partial class DroneEnemyScript : EnemyScript
 {
   [Export] float fireRate = 2f;
-  [Export] int damage = 1;
+  [Export] int damage = 8;
 
   float _fireTimer;
   Node3D[] _props;
 
   protected override void OnReady()
   {
-    maxHealth = 3;
+    maxHealth = 60;
     explosionRadius = 3f;
     AddToGroup("targets");
     _fireTimer = RandomizedFireTimer(fireRate);

@@ -13,6 +13,7 @@ public partial class BulletScript : Node3D, ILaunchable
 
   // > 0: the round bursts on impact and hurts every enemy in this radius (set before Launch)
   public float SplashRadius;
+  public int SplashDamage;
 
   static readonly PackedScene _burstPrefab = GD.Load<PackedScene>("res://prefabs/explosion_enemy.tscn");
   static readonly string[] _burstGroups = { "targets", "worm_segments" };
@@ -93,13 +94,13 @@ public partial class BulletScript : Node3D, ILaunchable
       {
         var hitPos = result["position"].AsVector3();
         var enemy = collider.GetParentOrNull<EnemyScript>() ?? collider as EnemyScript;
-        if (Authoritative && SplashRadius <= 0f)
+        if (Authoritative)
         {
           enemy?.TakeDamage(_damage, hitPos);
         }
         if (SplashRadius > 0f)
         {
-          Burst(hitPos);
+          Burst(hitPos, enemy);
         }
       }
       else
@@ -128,7 +129,8 @@ public partial class BulletScript : Node3D, ILaunchable
     DrawTrail();
   }
 
-  void Burst(Vector3 hitPos)
+  // the enemy hit directly already took its damage, so the burst skips it (a big target's centre is far from its surface)
+  void Burst(Vector3 hitPos, EnemyScript direct)
   {
     if (Authoritative)
     {
@@ -136,9 +138,10 @@ public partial class BulletScript : Node3D, ILaunchable
       {
         foreach (var node in GetTree().GetNodesInGroup(group))
         {
-          if (node is EnemyScript enemy && enemy.GlobalPosition.DistanceTo(hitPos) <= SplashRadius)
+          if (node is EnemyScript enemy && enemy != direct && enemy.GlobalPosition.DistanceTo(hitPos) <= SplashRadius)
           {
-            enemy.TakeDamage(_damage, hitPos);
+            var distance = enemy.GlobalPosition.DistanceTo(hitPos);
+            enemy.TakeDamage(Mathf.Max(1, Mathf.RoundToInt(SplashDamage * (1f - distance / SplashRadius))), hitPos);
           }
         }
       }

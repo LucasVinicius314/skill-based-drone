@@ -4,7 +4,7 @@ using Godot;
 // SyncRotation, SyncHealth are replicated by the prefab's MultiplayerSynchronizer) and send damage requests to the host
 public partial class EnemyScript : Node3D
 {
-  const int MaxDamagePerRequest = 10;
+  const int MaxDamagePerRequest = 3000;
   const float TargetRefreshSeconds = 0.5f;
   const float LateJoinSeconds = 1f;
 
