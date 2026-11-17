@@ -11,6 +11,13 @@ public partial class BulletScript : Node3D, ILaunchable
   // false for another peer's replayed shot: it flies and impacts but never damages an enemy
   public bool Authoritative = true;
 
+  // > 0: the round bursts on impact and hurts every enemy in this radius (set before Launch)
+  public float SplashRadius;
+
+  static readonly PackedScene _burstPrefab = GD.Load<PackedScene>("res://prefabs/explosion_enemy.tscn");
+  static readonly string[] _burstGroups = { "targets", "worm_segments" };
+  static int _burstCounter;
+
   // one query reused every frame: a new one per frame piles up native objects that only a GC frees
   readonly PhysicsRayQueryParameters3D _query = new() { CollideWithAreas = true, CollideWithBodies = true };
 
@@ -86,9 +93,13 @@ public partial class BulletScript : Node3D, ILaunchable
       {
         var hitPos = result["position"].AsVector3();
         var enemy = collider.GetParentOrNull<EnemyScript>() ?? collider as EnemyScript;
-        if (Authoritative)
+        if (Authoritative && SplashRadius <= 0f)
         {
           enemy?.TakeDamage(_damage, hitPos);
+        }
+        if (SplashRadius > 0f)
+        {
+          Burst(hitPos);
         }
       }
       else
@@ -115,6 +126,32 @@ public partial class BulletScript : Node3D, ILaunchable
     }
 
     DrawTrail();
+  }
+
+  void Burst(Vector3 hitPos)
+  {
+    if (Authoritative)
+    {
+      foreach (var group in _burstGroups)
+      {
+        foreach (var node in GetTree().GetNodesInGroup(group))
+        {
+          if (node is EnemyScript enemy && enemy.GlobalPosition.DistanceTo(hitPos) <= SplashRadius)
+          {
+            enemy.TakeDamage(_damage, hitPos);
+          }
+        }
+      }
+    }
+
+    // a full explosion on every round would sink the frame rate: show one in four
+    if (_burstCounter++ % 4 == 0)
+    {
+      var explosion = _burstPrefab.Instantiate<ExplosionScript>();
+      explosion.Init(SplashRadius * 0.4f);
+      GetTree().CurrentScene.AddChild(explosion);
+      explosion.GlobalPosition = hitPos;
+    }
   }
 
   void DrawTrail()

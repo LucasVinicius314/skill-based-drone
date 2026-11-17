@@ -54,7 +54,6 @@ public partial class HudScript : Control
   const float AmmoWidgetH   = AmmoBarY + AmmoBarH + 4f;
   const float AmmoWidgetGap = 12f;
 
-  static readonly string[] WeaponNames = { "GUN", "MSL" };
 
   public override void _Ready()
   {
@@ -179,7 +178,7 @@ public partial class HudScript : Control
 
   void DrawAmmoWidget(WeaponScript w, int index, Vector2 origin)
   {
-    var tag = index < WeaponNames.Length ? WeaponNames[index] : $"W{index}";
+    var tag = w.label;
     var labelColor = w.IsReloading ? new Color(1f, 0.7f, 0f, 1f) : ColText;
     var widgetW = AmmoWidgetW + 16f;
 
@@ -210,7 +209,7 @@ public partial class HudScript : Control
     if (w.MaxAmmo > 0)
     {
       var iconsOrigin = origin + new Vector2(4f, AmmoIconsY);
-      DrawAmmoIcons(w, index == 1, iconsOrigin);
+      DrawAmmoIcons(w, w.isMissile, iconsOrigin);
     }
 
     DrawAmmoBar(w, origin);

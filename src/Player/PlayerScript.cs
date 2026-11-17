@@ -24,7 +24,9 @@ public partial class PlayerScript : RigidBody3D
   [Export] public Vector3 SyncPosition { get; set; }
   [Export] public Quaternion SyncRotation { get; set; } = Quaternion.Identity;
   [Export] public Vector3 SyncVelocity { get; set; }
+  [Export] public int SyncLoadout { get; set; }
 
+  static readonly Color FriendlyBlue = new(0.25f, 0.6f, 1f, 0.9f);
   static readonly List<PlayerScript> _all = new();
 
   // the drone this peer flies (null before it exists)
@@ -62,6 +64,7 @@ public partial class PlayerScript : RigidBody3D
 
   bool _placed;
   Label3D _nameTag;
+  int _tagDistance = -1;
   float _targetFov;
   float _pitchInput;
   float _rollInput;
@@ -74,12 +77,10 @@ public partial class PlayerScript : RigidBody3D
   float _orbitPitch;
   float _fovScale = 1f;
   int _health;
-  int _primaryIndex;
-  int _secondaryIndex = 1;
   bool _thirdPerson;
   bool _freeLook;
 
-  WeaponScript[] _weapons;
+  WeaponScript[] _weapons = System.Array.Empty<WeaponScript>();
 
   Camera3D _camera;
   Transform3D _fpvLocalTransform;
@@ -142,19 +143,14 @@ public partial class PlayerScript : RigidBody3D
     _bladesAudio.Finished += () => _bladesAudio.Play();
     _bladesAudio.Play();
 
-    // weapons are WeaponScript nodes placed as children of Mount in scene order
-    // index 0 = primary (fire), index 1 = secondary (fire_missile)
-    _weapons = _mount.GetChildren().OfType<WeaponScript>().ToArray();
-    for (var i = 0; i < _weapons.Length; i++)
-    {
-      _weapons[i].Index = i;
-    }
-
     if (!IsLocal)
     {
       SetupPuppet();
       return;
     }
+
+    SyncLoadout = Loadout.Pack(Loadout.Slots);
+    BuildWeapons(Loadout.Slots);
 
     Local = this;
     Input.MouseMode = Input.MouseModeEnum.Captured;
@@ -215,16 +211,42 @@ public partial class PlayerScript : RigidBody3D
       NoDepthTest = true,
       PixelSize = 0.0012f,
       FontSize = 32,
-      Modulate = new Color(0f, 1f, 0.4f, 0.9f),
+      Modulate = FriendlyBlue,
       Position = new Vector3(0f, 2.2f, 0f),
     };
     AddChild(_nameTag);
+
+    // a soft blue glow that keeps its screen size, so a friend is easy to spot from afar
+    var outline = new ShaderMaterial { Shader = GD.Load<Shader>("res://shaders/outline.gdshader") };
+    outline.SetShaderParameter("outline_color", new Color(0.25f, 0.6f, 1f));
+    foreach (var node in FindChildren("*", "MeshInstance3D", true, false))
+    {
+      ((MeshInstance3D)node).MaterialOverlay = outline;
+    }
 
     // the roster usually arrives after the drone does
     NetSession.Instance.RosterChanged += UpdateNameTag;
   }
 
-  void UpdateNameTag() => _nameTag.Text = NetSession.Instance.NameOf(PeerId);
+  void UpdateNameTag()
+  {
+    _tagDistance = -1;
+    ShowTag();
+  }
+
+  // the name with the distance to this friend, rewritten only when the whole metres change
+  void ShowTag()
+  {
+    var me = Local;
+    var metres = me == null ? 0 : Mathf.RoundToInt(me.GlobalPosition.DistanceTo(GlobalPosition));
+    if (metres == _tagDistance)
+    {
+      return;
+    }
+
+    _tagDistance = metres;
+    _nameTag.Text = $"{NetSession.Instance.NameOf(PeerId)}\n{metres} m";
+  }
 
   public void PlayHitmarker() => _hitmarkerAudio.Play();
 
@@ -241,6 +263,28 @@ public partial class PlayerScript : RigidBody3D
     if (_health <= 0)
     {
       GD.Print("Player dead");
+    }
+  }
+
+  // the weapons of the three slots, as children of Mount; the slot is the index that names a weapon across the network
+  void BuildWeapons(int[] choices)
+  {
+    _weapons = new WeaponScript[Loadout.SlotCount];
+    for (var i = 0; i < Loadout.SlotCount; i++)
+    {
+      var weapon = Loadout.Catalog[choices[i]].Prefab.Instantiate<WeaponScript>();
+      _mount.AddChild(weapon);
+      weapon.Position = Loadout.Mounts[i];
+      weapon.Index = i;
+      _weapons[i] = weapon;
+    }
+  }
+
+  void Fire(int slot, string action)
+  {
+    if (Input.IsActionPressed(action) && _weapons[slot].TryFire())
+    {
+      AddShake(_weapons[slot].shake);
     }
   }
 
@@ -356,14 +400,11 @@ public partial class PlayerScript : RigidBody3D
     _bladesAudio.PitchScale = Mathf.Lerp(bladePitchIdle, bladePitchMax, Mathf.Abs(throttle));
     _camera.Fov = Mathf.Lerp(_camera.Fov, _targetFov, fovLerpSpeed * (float)delta);
 
-    if (controls && Input.GetActionStrength("fire") > 0.5f && _primaryIndex < _weapons.Length && _weapons[_primaryIndex].TryFire())
+    if (controls)
     {
-      AddShake(0.04f);
-    }
-
-    if (controls && Input.IsActionPressed("fire_missile") && _secondaryIndex < _weapons.Length && _weapons[_secondaryIndex].TryFire())
-    {
-      AddShake(0.15f);
+      Fire(0, "fire");
+      Fire(1, "fire_missile");
+      Fire(2, "fire_tertiary");
     }
 
     _flareTimer -= (float)delta;
@@ -392,7 +433,12 @@ public partial class PlayerScript : RigidBody3D
   {
     if (!IsLocal)
     {
+      if (_weapons.Length == 0 && SyncLoadout != 0)
+      {
+        BuildWeapons(Loadout.Unpack(SyncLoadout));
+      }
       FollowOwner((float)delta);
+      ShowTag();
     }
   }
 

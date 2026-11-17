@@ -8,7 +8,8 @@ public partial class Main : Node3D
   const float SpawnSpacing = 4f;
   const double JoinTimeoutSeconds = 25;
 
-  static readonly Vector3 SpawnOrigin = new(0.34f, 0.685f, 2.23f);
+  // the fixed start pad against the +Z border; drones face -Z, toward the map
+  static readonly Vector3 SpawnOrigin = new(0f, -0.7f, Terrain.PadCenter.Y);
 
   readonly PackedScene _playerPrefab = GD.Load<PackedScene>("res://prefabs/player.tscn");
 

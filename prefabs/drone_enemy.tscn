@@ -1,19 +1,62 @@
-[gd_scene format=3 uid="uid://dviw40xdw4fw3"]
+[gd_scene format=3]
 
-[ext_resource type="Script" uid="uid://b2icr7vwwa3uj" path="res://src/Enemies/DroneEnemyScript.cs" id="1_kjw8i"]
+[ext_resource type="Script" path="res://src/Enemies/DroneEnemyScript.cs" id="1_script"]
 [ext_resource type="PackedScene" path="res://prefabs/health_bar.tscn" id="2_healthbar"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_target"]
-albedo_color = Color(1, 0.1, 0.1, 1)
+[sub_resource type="StandardMaterial3D" id="carbon"]
+albedo_color = Color(0.08, 0.08, 0.09, 1)
+metallic = 0.3
+roughness = 0.5
 
-[sub_resource type="BoxMesh" id="BoxMesh_target"]
-material = SubResource("StandardMaterial3D_target")
-size = Vector3(4, 4, 0.5)
+[sub_resource type="StandardMaterial3D" id="red"]
+albedo_color = Color(0.85, 0.14, 0.08, 1)
+metallic = 0.2
+roughness = 0.4
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_target"]
-size = Vector3(4, 4, 0.5)
+[sub_resource type="StandardMaterial3D" id="metal"]
+albedo_color = Color(0.35, 0.36, 0.4, 1)
+metallic = 0.8
+roughness = 0.3
 
-[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_sync"]
+[sub_resource type="StandardMaterial3D" id="lens"]
+albedo_color = Color(0.02, 0.03, 0.05, 1)
+metallic = 0.9
+roughness = 0.1
+
+[sub_resource type="BoxMesh" id="body"]
+size = Vector3(0.7, 0.3, 1.2)
+
+[sub_resource type="BoxMesh" id="battery"]
+size = Vector3(0.45, 0.2, 0.75)
+
+[sub_resource type="BoxMesh" id="arm"]
+size = Vector3(2.0, 0.07, 0.17)
+
+[sub_resource type="BoxMesh" id="cam"]
+size = Vector3(0.34, 0.3, 0.3)
+
+[sub_resource type="BoxMesh" id="blade"]
+size = Vector3(1.15, 0.012, 0.11)
+
+[sub_resource type="BoxMesh" id="tail"]
+size = Vector3(0.15, 0.06, 0.5)
+
+[sub_resource type="CylinderMesh" id="motor"]
+top_radius = 0.13
+bottom_radius = 0.13
+height = 0.2
+radial_segments = 12
+
+[sub_resource type="CylinderMesh" id="lens"]
+top_radius = 0.09
+bottom_radius = 0.09
+height = 0.1
+radial_segments = 12
+
+[sub_resource type="BoxShape3D" id="shape"]
+size = Vector3(2.6, 0.9, 2.6)
+
+[sub_resource type="SceneReplicationConfig" id="sync"]
 properties/0/path = NodePath(".:SyncPosition")
 properties/0/spawn = true
 properties/0/replication_mode = 1
@@ -24,19 +67,101 @@ properties/2/path = NodePath(".:SyncHealth")
 properties/2/spawn = true
 properties/2/replication_mode = 2
 
-[node name="DroneEnemy" type="Node3D" unique_id=379104609]
-script = ExtResource("1_kjw8i")
+[node name="DroneEnemy" type="Node3D"]
+script = ExtResource("1_script")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1662156342]
-mesh = SubResource("BoxMesh_target")
+[node name="Model" type="Node3D" parent="."]
 
-[node name="Area3D" type="Area3D" parent="." unique_id=1914874506]
+[node name="Body" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("body")
+surface_material_override/0 = SubResource("carbon")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D" unique_id=883147721]
-shape = SubResource("BoxShape3D_target")
+[node name="Battery" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.24, 0.08)
+mesh = SubResource("battery")
+surface_material_override/0 = SubResource("red")
 
-[node name="HealthBar" parent="." unique_id=381190125 instance=ExtResource("2_healthbar")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.6, 0)
+[node name="Camera" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, -0.68)
+mesh = SubResource("cam")
+surface_material_override/0 = SubResource("carbon")
+
+[node name="Lens" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0.02, -0.86)
+mesh = SubResource("lens")
+surface_material_override/0 = SubResource("lens")
+
+[node name="Tail" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0.8)
+mesh = SubResource("tail")
+surface_material_override/0 = SubResource("carbon")
+
+[node name="ArmA" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(0.70711, 0, -0.70711, 0, 1, 0, 0.70711, 0, 0.70711, 0, 0.0, 0)
+mesh = SubResource("arm")
+surface_material_override/0 = SubResource("carbon")
+
+[node name="ArmB" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(0.70711, 0, 0.70711, 0, 1, 0, -0.70711, 0, 0.70711, 0, 0.0, 0)
+mesh = SubResource("arm")
+surface_material_override/0 = SubResource("carbon")
+
+[node name="Motor0" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.72, 0.1, -0.72)
+mesh = SubResource("motor")
+surface_material_override/0 = SubResource("metal")
+
+[node name="Prop0" type="Node3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.72, 0.24, -0.72)
+
+[node name="Blade" type="MeshInstance3D" parent="Model/Prop0"]
+mesh = SubResource("blade")
+surface_material_override/0 = SubResource("red")
+
+[node name="Motor1" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.72, 0.1, 0.72)
+mesh = SubResource("motor")
+surface_material_override/0 = SubResource("metal")
+
+[node name="Prop1" type="Node3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.72, 0.24, 0.72)
+
+[node name="Blade" type="MeshInstance3D" parent="Model/Prop1"]
+mesh = SubResource("blade")
+surface_material_override/0 = SubResource("red")
+
+[node name="Motor2" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.72, 0.1, -0.72)
+mesh = SubResource("motor")
+surface_material_override/0 = SubResource("metal")
+
+[node name="Prop2" type="Node3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.72, 0.24, -0.72)
+
+[node name="Blade" type="MeshInstance3D" parent="Model/Prop2"]
+mesh = SubResource("blade")
+surface_material_override/0 = SubResource("red")
+
+[node name="Motor3" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.72, 0.1, 0.72)
+mesh = SubResource("motor")
+surface_material_override/0 = SubResource("metal")
+
+[node name="Prop3" type="Node3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.72, 0.24, 0.72)
+
+[node name="Blade" type="MeshInstance3D" parent="Model/Prop3"]
+mesh = SubResource("blade")
+surface_material_override/0 = SubResource("red")
+
+[node name="Area3D" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D"]
+shape = SubResource("shape")
+
+[node name="HealthBar" parent="." instance=ExtResource("2_healthbar")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
 
 [node name="Synchronizer" type="MultiplayerSynchronizer" parent="."]
-replication_config = SubResource("SceneReplicationConfig_sync")
+replication_config = SubResource("sync")

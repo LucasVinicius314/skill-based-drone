@@ -1,40 +1,136 @@
-[gd_scene format=3 uid="uid://d1uqa21m8m2b6"]
+[gd_scene format=3]
 
-[ext_resource type="Script" uid="uid://bc161i0gq12bd" path="res://src/Weapons/WeaponScript.cs" id="1_minigun"]
-[ext_resource type="PackedScene" uid="uid://dhnoaqgqurrxy" path="res://prefabs/bullet.tscn" id="2_bullet"]
-[ext_resource type="AudioStream" uid="uid://b1x57qghrjum7" path="res://sounds/653191__sebastianvdb__close-gun-shots-trim.mp3" id="3_sound"]
+[ext_resource type="Script" path="res://src/Weapons/WeaponScript.cs" id="1_w"]
+[ext_resource type="PackedScene" path="res://prefabs/bullet.tscn" id="2_bullet"]
+[ext_resource type="AudioStream" path="res://sounds/653191__sebastianvdb__close-gun-shots-trim.mp3" id="3_sound"]
 
-[sub_resource type="CylinderMesh" id="CylinderMesh_yrc81"]
-top_radius = 0.048
-bottom_radius = 0.048
-height = 0.29
+[sub_resource type="StandardMaterial3D" id="steel"]
+albedo_color = Color(0.2, 0.21, 0.23, 1)
+metallic = 0.6
+roughness = 0.4
 
-[sub_resource type="CylinderMesh" id="CylinderMesh_abah8"]
-top_radius = 0.053
-bottom_radius = 0.053
-height = 0.01
+[sub_resource type="StandardMaterial3D" id="dark"]
+albedo_color = Color(0.09, 0.09, 0.1, 1)
+metallic = 0.5
+roughness = 0.5
 
-[node name="WeaponMinigun" type="Node3D" unique_id=1327055697]
-script = ExtResource("1_minigun")
-fireRate = 0.05
+[sub_resource type="StandardMaterial3D" id="olive"]
+albedo_color = Color(0.2, 0.23, 0.15, 1)
+metallic = 0.3
+roughness = 0.6
+
+[sub_resource type="CylinderMesh" id="barrel"]
+top_radius = 0.0075
+bottom_radius = 0.0075
+height = 0.42
+radial_segments = 12
+
+[sub_resource type="CylinderMesh" id="clamp"]
+top_radius = 0.032
+bottom_radius = 0.032
+height = 0.02
+radial_segments = 12
+
+[sub_resource type="CylinderMesh" id="hub"]
+top_radius = 0.012
+bottom_radius = 0.012
+height = 0.42
+radial_segments = 12
+
+[sub_resource type="CylinderMesh" id="housing"]
+top_radius = 0.05
+bottom_radius = 0.05
+height = 0.16
+radial_segments = 12
+
+[sub_resource type="BoxMesh" id="motor"]
+size = Vector3(0.09, 0.1, 0.12)
+
+[sub_resource type="BoxMesh" id="chute"]
+size = Vector3(0.05, 0.05, 0.18)
+
+[node name="WeaponMinigun" type="Node3D"]
+script = ExtResource("1_w")
+label = "M134"
+fireRate = 0.02
+projectileSpeed = 850.0
+damage = 1
+shootVolumeDb = -30.0
+shootPitch = 1.1
+spread = 0.5
+maxAmmo = 400
+reloadTime = 8.0
+shake = 0.03
 projectilePrefab = ExtResource("2_bullet")
 shootSound = ExtResource("3_sound")
-maxAmmo = 200
-reloadTime = 7.0
 
-[node name="Barrel" type="Marker3D" parent="." unique_id=1888473914]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.31630242)
+[node name="Barrel" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.43)
 
-[node name="Model" type="Node3D" parent="." unique_id=1991679719]
+[node name="Model" type="Node3D" parent="."]
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Model" unique_id=274095838]
-transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 2.9802322e-08, -0.02587894, -0.15023082)
-mesh = SubResource("CylinderMesh_yrc81")
+[node name="Barrel0" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0.021, 0.0, -0.2)
+mesh = SubResource("barrel")
+surface_material_override/0 = SubResource("steel")
 
-[node name="MeshInstance3D2" type="MeshInstance3D" parent="Model" unique_id=1454509034]
-transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 2.9802322e-08, -0.02587894, -0.26946706)
-mesh = SubResource("CylinderMesh_abah8")
+[node name="Barrel1" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0.0105, 0.0182, -0.2)
+mesh = SubResource("barrel")
+surface_material_override/0 = SubResource("steel")
 
-[node name="MeshInstance3D3" type="MeshInstance3D" parent="Model" unique_id=121362901]
-transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 2.9802322e-08, -0.02587894, -0.21621607)
-mesh = SubResource("CylinderMesh_abah8")
+[node name="Barrel2" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, -0.0105, 0.0182, -0.2)
+mesh = SubResource("barrel")
+surface_material_override/0 = SubResource("steel")
+
+[node name="Barrel3" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, -0.021, 0.0, -0.2)
+mesh = SubResource("barrel")
+surface_material_override/0 = SubResource("steel")
+
+[node name="Barrel4" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, -0.0105, -0.0182, -0.2)
+mesh = SubResource("barrel")
+surface_material_override/0 = SubResource("steel")
+
+[node name="Barrel5" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0.0105, -0.0182, -0.2)
+mesh = SubResource("barrel")
+surface_material_override/0 = SubResource("steel")
+
+[node name="Hub" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, -0.2)
+mesh = SubResource("hub")
+surface_material_override/0 = SubResource("dark")
+
+[node name="Clamp0" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, -0.4)
+mesh = SubResource("clamp")
+surface_material_override/0 = SubResource("dark")
+
+[node name="Clamp1" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, -0.27)
+mesh = SubResource("clamp")
+surface_material_override/0 = SubResource("dark")
+
+[node name="Clamp2" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, -0.14)
+mesh = SubResource("clamp")
+surface_material_override/0 = SubResource("dark")
+
+[node name="Housing" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0.01)
+mesh = SubResource("housing")
+surface_material_override/0 = SubResource("olive")
+
+[node name="Motor" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0, 0.14)
+mesh = SubResource("motor")
+surface_material_override/0 = SubResource("dark")
+
+[node name="Chute" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.07, -0.02, 0.04)
+mesh = SubResource("chute")
+surface_material_override/0 = SubResource("olive")
+

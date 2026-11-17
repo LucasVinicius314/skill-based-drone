@@ -6,6 +6,7 @@ public partial class DroneEnemyScript : EnemyScript
   [Export] int damage = 1;
 
   float _fireTimer;
+  Node3D[] _props;
 
   protected override void OnReady()
   {
@@ -13,6 +14,23 @@ public partial class DroneEnemyScript : EnemyScript
     explosionRadius = 3f;
     AddToGroup("targets");
     _fireTimer = RandomizedFireTimer(fireRate);
+
+    _props = new Node3D[4];
+    for (var i = 0; i < _props.Length; i++)
+    {
+      _props[i] = GetNode<Node3D>($"Model/Prop{i}");
+    }
+  }
+
+  public override void _Process(double delta)
+  {
+    base._Process(delta);
+
+    // the rotors spin, alternating direction like a real quad
+    for (var i = 0; i < _props.Length; i++)
+    {
+      _props[i].RotateY((i % 2 == 0 ? 1f : -1f) * 60f * (float)delta);
+    }
   }
 
   public override void _PhysicsProcess(double delta)

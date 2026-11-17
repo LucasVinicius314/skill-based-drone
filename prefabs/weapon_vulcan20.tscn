@@ -1,0 +1,140 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/Weapons/WeaponScript.cs" id="1_w"]
+[ext_resource type="PackedScene" path="res://prefabs/bullet.tscn" id="2_bullet"]
+[ext_resource type="AudioStream" path="res://sounds/653191__sebastianvdb__close-gun-shots-trim.mp3" id="3_sound"]
+
+[sub_resource type="StandardMaterial3D" id="steel"]
+albedo_color = Color(0.2, 0.21, 0.23, 1)
+metallic = 0.6
+roughness = 0.4
+
+[sub_resource type="StandardMaterial3D" id="dark"]
+albedo_color = Color(0.09, 0.09, 0.1, 1)
+metallic = 0.5
+roughness = 0.5
+
+[sub_resource type="StandardMaterial3D" id="olive"]
+albedo_color = Color(0.2, 0.23, 0.15, 1)
+metallic = 0.3
+roughness = 0.6
+
+[sub_resource type="CylinderMesh" id="barrel"]
+top_radius = 0.011
+bottom_radius = 0.011
+height = 0.62
+radial_segments = 12
+
+[sub_resource type="CylinderMesh" id="clamp"]
+top_radius = 0.05
+bottom_radius = 0.05
+height = 0.025
+radial_segments = 12
+
+[sub_resource type="CylinderMesh" id="hub"]
+top_radius = 0.018
+bottom_radius = 0.018
+height = 0.62
+radial_segments = 12
+
+[sub_resource type="CylinderMesh" id="housing"]
+top_radius = 0.075
+bottom_radius = 0.075
+height = 0.3
+radial_segments = 12
+
+[sub_resource type="CylinderMesh" id="drum"]
+top_radius = 0.1
+bottom_radius = 0.1
+height = 0.18
+radial_segments = 12
+
+[sub_resource type="BoxMesh" id="feed"]
+size = Vector3(0.08, 0.1, 0.22)
+
+[node name="WeaponVulcan20" type="Node3D"]
+script = ExtResource("1_w")
+label = "M61"
+fireRate = 0.02
+projectileSpeed = 1050.0
+damage = 2
+splashRadius = 6.0
+shootVolumeDb = -14.0
+shootPitch = 0.8
+spread = 0.3
+maxAmmo = 400
+reloadTime = 8.0
+shake = 0.05
+projectilePrefab = ExtResource("2_bullet")
+shootSound = ExtResource("3_sound")
+
+[node name="Barrel" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.66)
+
+[node name="Model" type="Node3D" parent="."]
+
+[node name="Barrel0" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0.033, 0.0, -0.33)
+mesh = SubResource("barrel")
+surface_material_override/0 = SubResource("steel")
+
+[node name="Barrel1" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0.0165, 0.0286, -0.33)
+mesh = SubResource("barrel")
+surface_material_override/0 = SubResource("steel")
+
+[node name="Barrel2" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, -0.0165, 0.0286, -0.33)
+mesh = SubResource("barrel")
+surface_material_override/0 = SubResource("steel")
+
+[node name="Barrel3" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, -0.033, 0.0, -0.33)
+mesh = SubResource("barrel")
+surface_material_override/0 = SubResource("steel")
+
+[node name="Barrel4" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, -0.0165, -0.0286, -0.33)
+mesh = SubResource("barrel")
+surface_material_override/0 = SubResource("steel")
+
+[node name="Barrel5" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0.0165, -0.0286, -0.33)
+mesh = SubResource("barrel")
+surface_material_override/0 = SubResource("steel")
+
+[node name="Hub" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, -0.33)
+mesh = SubResource("hub")
+surface_material_override/0 = SubResource("dark")
+
+[node name="Clamp0" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, -0.62)
+mesh = SubResource("clamp")
+surface_material_override/0 = SubResource("dark")
+
+[node name="Clamp1" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, -0.45)
+mesh = SubResource("clamp")
+surface_material_override/0 = SubResource("dark")
+
+[node name="Clamp2" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, -0.28)
+mesh = SubResource("clamp")
+surface_material_override/0 = SubResource("dark")
+
+[node name="Housing" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, -0.1)
+mesh = SubResource("housing")
+surface_material_override/0 = SubResource("olive")
+
+[node name="Drum" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0.1)
+mesh = SubResource("drum")
+surface_material_override/0 = SubResource("dark")
+
+[node name="Feed" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, -0.03, 0.0)
+mesh = SubResource("feed")
+surface_material_override/0 = SubResource("olive")
+

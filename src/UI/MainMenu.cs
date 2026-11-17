@@ -59,6 +59,7 @@ public partial class MainMenu : Control
     BuildMainPage(column);
     BuildHostPage(column);
     BuildJoinPage(column);
+    BuildLoadoutPage(column);
     BuildSettingsPage(column);
 
     _status = Text("", 14, new Color(1f, 0.75f, 0.3f, 1f), HorizontalAlignment.Center);
@@ -118,6 +119,7 @@ public partial class MainMenu : Control
     page.AddChild(Btn("SOLO", () => Start(new StartRequest(SessionKind.Solo))));
     page.AddChild(Btn("HOST A ROOM", () => ShowPage("host")));
     page.AddChild(Btn("JOIN A ROOM", () => ShowPage("join")));
+    page.AddChild(Btn("LOADOUT", () => ShowPage("loadout")));
     page.AddChild(Btn("SETTINGS", () => ShowPage("settings")));
     page.AddChild(Btn("QUIT", () => GetTree().Quit()));
   }
@@ -158,6 +160,31 @@ public partial class MainMenu : Control
     _friendRooms = new VBoxContainer();
     _friendRooms.AddThemeConstantOverride("separation", 6);
     page.AddChild(_friendRooms);
+    page.AddChild(Btn("BACK", () => ShowPage("main")));
+  }
+
+  // one weapon per slot; the choice is saved at once and used by the next drone
+  void BuildLoadoutPage(Control parent)
+  {
+    var page = NewPage("loadout", parent);
+
+    for (var slot = 0; slot < Loadout.SlotCount; slot++)
+    {
+      var index = slot;
+      var title = index == 2 ? $"{Loadout.SlotNames[index]}  (mouse button 5)" : Loadout.SlotNames[index];
+      page.AddChild(Text(title, 14, GreenDim, HorizontalAlignment.Left));
+
+      var choice = new OptionButton { CustomMinimumSize = new Vector2(0, 40) };
+      foreach (var entry in Loadout.Catalog)
+      {
+        choice.AddItem(entry.Name);
+      }
+      choice.Selected = Loadout.Slots[index];
+      choice.ItemSelected += picked => Loadout.Set(index, (int)picked);
+      page.AddChild(choice);
+    }
+
+    page.AddChild(Text("Fire with left mouse, right mouse and mouse button 5.", 12, GreenDim, HorizontalAlignment.Center));
     page.AddChild(Btn("BACK", () => ShowPage("main")));
   }
 

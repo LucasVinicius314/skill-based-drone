@@ -1,4 +1,5 @@
 using Godot;
+using System.Collections.Generic;
 
 public partial class WeaponScript : Node3D
 {
@@ -10,9 +11,17 @@ public partial class WeaponScript : Node3D
   [Export] public float shootVolumeDb = -20f;
   [Export] public int maxAmmo = 0;       // 0 = unlimited
   [Export] public float reloadTime = 0f; // seconds
+  [Export] public string label = "GUN";  // short name on the HUD
+  [Export] public bool isMissile;        // drawn with missile icons
+  [Export] public float shake = 0.04f;   // camera shake per shot
+  [Export] public float shootPitch = 1f;
+  [Export] public float spread;          // cone half angle in degrees
+  [Export] public float splashRadius;    // > 0: rounds burst on impact (high explosive)
 
   AudioStreamPlayer3D _audio;
   Node3D _barrel;
+  readonly List<Node3D> _barrels = new();
+  int _nextBarrel;
   float _timer;
   int _ammo;
   float _reloadTimer;
@@ -31,10 +40,18 @@ public partial class WeaponScript : Node3D
 
   public override void _Ready()
   {
-    _barrel = GetNodeOrNull<Node3D>("Barrel");
+    // every child named Barrel* is a muzzle; several of them fire in turn
+    foreach (var child in GetChildren())
+    {
+      if (child is Marker3D marker && marker.Name.ToString().StartsWith("Barrel"))
+      {
+        _barrels.Add(marker);
+      }
+    }
+    _barrel = _barrels.Count > 0 ? _barrels[0] : null;
     _ammo = maxAmmo;
 
-    _audio = new AudioStreamPlayer3D { MaxDistance = 120f, Stream = shootSound, VolumeDb = shootVolumeDb };
+    _audio = new AudioStreamPlayer3D { MaxDistance = 120f, Stream = shootSound, VolumeDb = shootVolumeDb, PitchScale = shootPitch };
     AddChild(_audio);
   }
 
@@ -74,11 +91,28 @@ public partial class WeaponScript : Node3D
       }
     }
 
-    var origin = _barrel.GlobalPosition;
-    var forward = -_barrel.GlobalTransform.Basis.Z;
+    var muzzle = _barrels[_nextBarrel++ % _barrels.Count];
+    var origin = muzzle.GlobalPosition;
+    var forward = Spread(-muzzle.GlobalTransform.Basis.Z);
     SpawnProjectile(origin, forward, true);
     NetSession.Instance.AnnounceShot(Index, origin, forward);
     return true;
+  }
+
+  Vector3 Spread(Vector3 forward)
+  {
+    if (spread <= 0f)
+    {
+      return forward;
+    }
+
+    var side = forward.Cross(Vector3.Up);
+    if (side.LengthSquared() < 0.0001f)
+    {
+      side = Vector3.Right;
+    }
+    var axis = side.Normalized().Rotated(forward, GD.Randf() * Mathf.Tau);
+    return forward.Rotated(axis, GD.Randf() * Mathf.DegToRad(spread));
   }
 
   // mine = fired by the local player: only that copy damages enemies. other peers replay it for show
@@ -97,6 +131,7 @@ public partial class WeaponScript : Node3D
     if (projectile is BulletScript bullet)
     {
       bullet.Authoritative = mine;
+      bullet.SplashRadius = splashRadius;
       bullet.Launch(origin, forward, BulletScript.Faction.Player, damage, projectileSpeed);
     }
     else if (projectile is ILaunchable launchable)

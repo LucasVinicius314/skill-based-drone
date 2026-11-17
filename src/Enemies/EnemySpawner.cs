@@ -11,10 +11,12 @@ public partial class EnemySpawner : MultiplayerSpawner
     Worm,
   }
 
-  [Export] int count = 20;
-  [Export] float radius = 100f;
-  [Export] int wormCount = 3;
-  [Export] int tankCount = 5;
+  const float MapMargin = 0.8f;
+  const float PadClearance = 180f;
+
+  [Export] int count = 40;
+  [Export] int wormCount = 5;
+  [Export] int tankCount = 12;
 
   readonly PackedScene _dronePrefab = GD.Load<PackedScene>("res://prefabs/drone_enemy.tscn");
   readonly PackedScene _wormPrefab = GD.Load<PackedScene>("res://prefabs/worm.tscn");
@@ -30,19 +32,60 @@ public partial class EnemySpawner : MultiplayerSpawner
   // the host calls this once its session is running: at once when solo, when the room exists when hosting
   public void SpawnAll()
   {
+    var rng = new RandomNumberGenerator();
+    rng.Randomize();
+
     for (var i = 0; i < count; i++)
     {
-      Place(Kind.Drone, AboveGround(RandomOnSphere() * radius, 8f));
+      var xz = FindSpot(rng, flat: false);
+      var ground = Terrain.HeightAt(xz.X, xz.Y);
+      Place(Kind.Drone, new Vector3(xz.X, ground + rng.RandfRange(10f, 60f), xz.Y));
     }
     for (var i = 0; i < wormCount; i++)
     {
-      Place(Kind.Worm, AboveGround(RandomOnSphere() * radius, 12f));
+      var xz = FindSpot(rng, flat: false);
+      var ground = Terrain.HeightAt(xz.X, xz.Y);
+      Place(Kind.Worm, new Vector3(xz.X, ground + rng.RandfRange(15f, 40f), xz.Y));
     }
     for (var i = 0; i < tankCount; i++)
     {
-      var xz = RandomOnDisk() * radius;
+      var xz = FindSpot(rng, flat: true);
       Place(Kind.Tank, new Vector3(xz.X, Terrain.HeightAt(xz.X, xz.Y) + 0.6f, xz.Y));
     }
+  }
+
+  // a random spot on the map: inside the mountain rim, away from the start pad and the structures, and for ground
+  // units on gentle, low ground. the heightfield is a pure function, so no physics is needed
+  static Vector2 FindSpot(RandomNumberGenerator rng, bool flat)
+  {
+    var limit = Terrain.Half * MapMargin;
+    var spot = Vector2.Zero;
+    for (var attempt = 0; attempt < 200; attempt++)
+    {
+      spot = new Vector2(rng.RandfRange(-limit, limit), rng.RandfRange(-limit, limit));
+      if (spot.DistanceTo(Terrain.PadCenter) < PadClearance || Structures.Blocked(spot.X, spot.Y, 15f))
+      {
+        continue;
+      }
+      if (!flat || IsGentle(spot))
+      {
+        break;
+      }
+    }
+    return spot;
+  }
+
+  static bool IsGentle(Vector2 at)
+  {
+    var h = Terrain.HeightAt(at.X, at.Y);
+    if (h > 25f)
+    {
+      return false;
+    }
+    const float step = 6f;
+    var dx = Terrain.HeightAt(at.X + step, at.Y) - Terrain.HeightAt(at.X - step, at.Y);
+    var dz = Terrain.HeightAt(at.X, at.Y + step) - Terrain.HeightAt(at.X, at.Y - step);
+    return Mathf.Abs(dx) < 4f && Mathf.Abs(dz) < 4f;
   }
 
   void Place(Kind kind, Vector3 position)
@@ -65,29 +108,5 @@ public partial class EnemySpawner : MultiplayerSpawner
     node.Name = $"Enemy{args[2].AsInt32()}";
     node.Position = args[1].AsVector3();
     return node;
-  }
-
-  // keeps a flying enemy at least `clearance` metres over the ground
-  static Vector3 AboveGround(Vector3 position, float clearance)
-  {
-    position.Y = Mathf.Max(position.Y, Terrain.HeightAt(position.X, position.Z) + clearance);
-    return position;
-  }
-
-  static Vector2 RandomOnDisk()
-  {
-    var rng = new RandomNumberGenerator();
-    rng.Randomize();
-    var angle = rng.RandfRange(0f, Mathf.Tau);
-    var r = Mathf.Sqrt(rng.Randf());
-    return new Vector2(Mathf.Cos(angle) * r, Mathf.Sin(angle) * r);
-  }
-
-  static Vector3 RandomOnSphere()
-  {
-    var rng = new RandomNumberGenerator();
-    rng.Randomize();
-    var v = new Vector3(rng.Randfn(), rng.Randfn(), rng.Randfn());
-    return v.Normalized();
   }
 }

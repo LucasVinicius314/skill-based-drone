@@ -4,12 +4,15 @@ using System.Threading.Tasks;
 
 // the ground: a procedural heightfield built in square chunks when the world starts. the height is a pure function of
 // (x, z) with fixed constants, so every peer builds the identical terrain and nothing about it goes over the network.
-// a flat pad around the origin is where the drones start; hills grow outward and a ring of mountains closes the map
+// a flat pad against the +Z border is where the drones start; hills grow outward and a ring of mountains closes the map
 public partial class Terrain : Node3D
 {
-  public const float Size = 1024f;
+  public const float Size = 2048f;
 
-  const float Half = Size * 0.5f;
+  public const float Half = Size * 0.5f;
+
+  // the fixed start pad sits against the +Z border, inside the mountain rim; the drones start there facing the map
+  public static readonly Vector2 PadCenter = new(0f, Half * 0.84f);
   const float Cell = 2f;
   const int ChunkCells = 64;
   const int Cells = (int)(Size / Cell);
@@ -33,7 +36,7 @@ public partial class Terrain : Node3D
   // the height of the ground at a world position, usable before the terrain node exists
   public static float HeightAt(float x, float z)
   {
-    var distance = MathF.Sqrt(x * x + z * z);
+    var distance = MathF.Sqrt(x * x + (z - PadCenter.Y) * (z - PadCenter.Y));
     var open = Smooth((distance - FlatRadius) / FlatBlend);
 
     var hills = Fbm(x * 0.0035f, z * 0.0035f, Seed, 5);
@@ -41,7 +44,7 @@ public partial class Terrain : Node3D
     var land = hills * HillHeight + ridge * ridge * RidgeHeight;
 
     var edge = MathF.Max(MathF.Abs(x), MathF.Abs(z)) / Half;
-    var rim = Smooth((edge - 0.78f) / 0.22f) * RimHeight;
+    var rim = Smooth((edge - 0.9f) / 0.1f) * RimHeight;
 
     return FlatHeight + open * land + rim;
   }

@@ -2,8 +2,6 @@
 
 [ext_resource type="Script" uid="uid://cfxaoqoik7fa3" path="res://src/Player/PlayerScript.cs" id="1_72ieh"]
 [ext_resource type="Texture2D" uid="uid://cx5g2crwr6koo" path="res://skyboxes/industrial_sunset_puresky_4k.exr" id="2_4dohe"]
-[ext_resource type="PackedScene" uid="uid://c2rck6riptj4r" path="res://prefabs/weapon_50cal.tscn" id="2_50cal"]
-[ext_resource type="PackedScene" uid="uid://bssr2y67ws3qs" path="res://prefabs/weapon_missile_launcher.tscn" id="3_missile"]
 [ext_resource type="Shader" uid="uid://di1wbtolu4tfr" path="res://shaders/invert.gdshader" id="3_r66lb"]
 [ext_resource type="PackedScene" uid="uid://cftbtma232l43" path="res://prefabs/ac1000_model.tscn" id="6_g2jcq"]
 
@@ -42,6 +40,9 @@ properties/1/replication_mode = 1
 properties/2/path = NodePath(".:SyncVelocity")
 properties/2/spawn = true
 properties/2/replication_mode = 1
+properties/3/path = NodePath(".:SyncLoadout")
+properties/3/spawn = true
+properties/3/replication_mode = 2
 
 [node name="Player" type="RigidBody3D" unique_id=1035182302]
 physics_interpolation_mode = 1
@@ -128,12 +129,6 @@ offset_right = 26.0
 offset_bottom = 2.0
 grow_horizontal = 2
 grow_vertical = 2
-
-[node name="Weapon50Cal" parent="Mount" unique_id=828247631 instance=ExtResource("2_50cal")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.20303273, 0.1756603)
-
-[node name="WeaponMissileLauncher" parent="Mount" unique_id=1901349118 instance=ExtResource("3_missile")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2183025, -0.18383104, 0.15154208)
 
 [node name="Model" type="Node3D" parent="Mount" unique_id=1196379245]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.021497011, 0.08982143)

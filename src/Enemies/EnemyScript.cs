@@ -36,12 +36,28 @@ public partial class EnemyScript : Node3D
   public override void _Ready()
   {
     _healthBar = GetNodeOrNull<HealthBarScript>("HealthBar");
+    AddOutline();
     OnReady();
     _health = maxHealth;
     _healthBar?.Init(maxHealth);
     if (Multiplayer.IsServer())
     {
       SyncHealth = maxHealth;
+    }
+  }
+
+  static readonly ShaderMaterial _outline = new() { Shader = GD.Load<Shader>("res://shaders/outline.gdshader") };
+
+  // a red edge around every model part, so enemies are easy to pick out (the health bar is left alone)
+  void AddOutline()
+  {
+    foreach (var node in FindChildren("*", "MeshInstance3D", true, false))
+    {
+      var mesh = (MeshInstance3D)node;
+      if (_healthBar == null || !_healthBar.IsAncestorOf(mesh))
+      {
+        mesh.MaterialOverlay = _outline;
+      }
     }
   }
 
